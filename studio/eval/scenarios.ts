@@ -51,6 +51,32 @@ export const inGroup = (re: RegExp, groupRe: RegExp): Check => ({
   }),
 });
 
+// Documentation chapters (found by id or title) and their content
+const chaptersOf = (s: Scene, re: RegExp) => s.blocks.filter((b) => re.test(b.id) || re.test(b.title ?? ''));
+const chapterContent = (b: Scene['blocks'][number]) =>
+  b.kind === 'table' ? [...(b.columns ?? []), ...(b.rows ?? []).flat()].join(' | ') : b.text ?? '';
+
+export const hasChapter = (re: RegExp, kind?: 'text' | 'table'): Check => ({
+  name: `${kind ?? ''} chapter ${re}`.trim(),
+  test: (s) => chaptersOf(s, re).some((b) => kind == null || b.kind === kind),
+});
+export const oneChapter = (re: RegExp): Check => ({ name: `exactly one chapter ${re}`, test: (s) => chaptersOf(s, re).length === 1 });
+export const chapterSays = (re: RegExp, content: RegExp, times = 1): Check => ({
+  name: `chapter ${re} says ${content}${times > 1 ? ` ×${times}` : ''}`,
+  test: (s) => chaptersOf(s, re).some((b) =>
+    (chapterContent(b).match(new RegExp(content.source, content.flags.includes('g') ? content.flags : content.flags + 'g')) ?? []).length >= times),
+});
+export const chaptersBetween = (min: number, max: number): Check => ({
+  name: `${min}–${max} chapters`, test: (s) => s.blocks.length >= min && s.blocks.length <= max,
+});
+const ACTORS = new Set(['user', 'client', 'mobile', 'external']);
+/** Every component of the diagram (not users, clients or external systems) is a row of the table, its label in the first column. */
+export const tableCoversNodes = (re: RegExp): Check => ({
+  name: `table ${re} lists every component`,
+  test: (s) => chaptersOf(s, re).some((b) => b.kind === 'table' && s.nodes.filter((n) => !ACTORS.has(n.kind)).every((n) =>
+    (b.rows ?? []).some((r) => (r[0] ?? '').toLowerCase().includes(n.label.toLowerCase())))),
+});
+
 export const SCENARIOS: Scenario[] = [
   {
     name: 'GCP web app, ten edits',
@@ -97,6 +123,40 @@ export const SCENARIOS: Scenario[] = [
       {
         say: 'Label the connection from the users to the load balancer HTTPS.',
         checks: [{ name: 'users → load balancer labelled HTTPS', test: (s) => s.edges.some((e) => /https/i.test(e.label ?? '')) }],
+      },
+    ],
+  },
+  {
+    name: 'Architecture documentation (arc42, C4, ADRs)',
+    steps: [
+      {
+        say: 'Draw an architecture on Google Cloud: users go through Cloud Load Balancing to an Orders API on Cloud Run, which caches in Memorystore for Redis, stores orders in Cloud SQL and publishes order events to Pub/Sub.',
+        checks: [isType('architecture'), hasNode(/cloud run|orders api/i), hasNode(/cloud sql/i), hasNode(/pub\/?sub/i)],
+      },
+      {
+        say: 'Document this architecture.',
+        checks: [
+          chaptersBetween(6, 10),
+          hasChapter(/overview|introduction/i, 'text'),
+          chapterSays(/overview|introduction/i, /quality goals/i),
+          hasChapter(/context/i, 'table'),
+          hasChapter(/building|component/i, 'table'),
+          tableCoversNodes(/building|component/i),
+          chapterSays(/runtime/i, /^\s*1\. /m),
+          chapterSays(/runtime/i, /\basync/i),
+          chapterSays(/decision/i, /ADR-\d/, 2),
+          chapterSays(/decision/i, /consequences/i),
+          hasChapter(/risk/i, 'table'),
+          chapterSays(/risk/i, /mitigation/i),
+        ],
+      },
+      {
+        say: 'Add a decision record about using Pub/Sub for the order events.',
+        checks: [oneChapter(/decision/i), chapterSays(/decision/i, /ADR-\d/, 3), chapterSays(/decision/i, /pub\/?sub/i), chaptersBetween(6, 10)],
+      },
+      {
+        say: 'Add a runbook for a database outage after the deployment chapter.',
+        checks: [hasChapter(/runbook/i, 'text'), chapterSays(/runbook/i, /escalat/i)],
       },
     ],
   },

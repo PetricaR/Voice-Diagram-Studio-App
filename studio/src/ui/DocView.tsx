@@ -77,18 +77,34 @@ function ChapterEditor({ block, chapter, onDone }: {
   );
 }
 
+/** What the "Document this diagram" button asks Gemini (the prompt picks the outline for the diagram type). */
+const DOCUMENT_REQUEST = 'Document this diagram.';
+
 function EmptyBook({ onAdd }: { onAdd: (kind: 'text' | 'table') => void }) {
-  const { toggleVoice } = useStudio();
+  const { store, agent, liveKey, openSettings, toggleVoice } = useStudio();
+  const canDocument = hasDiagram(store.scene);
+  const writeDocs = () => {
+    if (liveKey === 'missing') openSettings();
+    else agent.sendText(DOCUMENT_REQUEST).catch(() => undefined);
+  };
   return (
     <div className="doc-empty">
       <div className="doc-empty-icon"><Icon name="menu_book" size={32} /></div>
       <h1>No documentation yet</h1>
       <p>
-        Say “document this architecture” and Gemini writes it here as a book: an overview, the components,
-        the data flow, security and operations, one chapter each, with a table of contents.
+        Say “document this architecture” and Gemini writes it here as a book that follows arc42 and the
+        C4 model: goals, context, building blocks, runtime flows, deployment, cross-cutting concepts,
+        decision records (ADRs) and risks, one chapter each, with a table of contents.
       </p>
       <div className="doc-empty-actions">
-        <button type="button" className="filled-btn" onClick={toggleVoice}><Icon name="mic" size={20} /> Start talking</button>
+        {canDocument && (
+          <button type="button" className="filled-btn doc-generate" onClick={writeDocs}>
+            <Icon name="article" size={20} /> Document this diagram
+          </button>
+        )}
+        <button type="button" className={canDocument ? 'tonal-btn' : 'filled-btn'} onClick={toggleVoice}>
+          <Icon name="mic" size={20} /> Start talking
+        </button>
         <button type="button" className="tonal-btn" onClick={() => onAdd('text')}><Icon name="note_add" size={18} /> Write a chapter</button>
         <button type="button" className="text-btn" onClick={() => onAdd('table')}><Icon name="table_chart" size={18} /> Add a table</button>
       </div>

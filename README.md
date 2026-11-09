@@ -64,8 +64,10 @@ Press **Space** (or click the mic) to talk, or press **`/`** to type a request:
 | --- | --- |
 | *"Draw a web app on Google Cloud with Cloud Run, Cloud SQL, and Vertex AI"* | `create_diagram` (creates the diagram with a title and initial ELK layout) |
 | *"Add a Redis cache between the API and the database"* | `edit_diagram` (places the new node between neighbors without reshuffling unrelated nodes) |
-| *"Document this architecture"*, *"Write a chapter on security risks"* | `write_text` (adds/updates a Markdown chapter in the page's Documentation tab) |
+| *"Document this architecture"* (or **Document this diagram** in an empty Documentation tab) | `write_text` + `write_table`: an [arc42-style book](studio/README.md#how-gemini-writes-architecture-documentation) — goals, context, building blocks, runtime view, deployment, cross-cutting concepts, ADRs, risks |
+| *"Add an ADR for the cache"*, *"Write a runbook for a database outage"* | `write_text` (one chapter, or one more decision record appended to `decisions`) |
 | *"Add a table of components, ports, and responsibilities"* | `write_table` (adds a structured table chapter to the Documentation tab) |
+| *"Update the documentation"* (after the diagram changed) | `write_text` / `write_table` on the stale chapters only, by their stable ids |
 | *"Open the documentation"*, *"Go back to the diagram"* | `switch_page` with `view: "documentation"` / `"diagram"` |
 | *"Now draw the checkout flow in a new tab"* | `create_diagram` with `new_page: true` (preserves the current diagram on its tab) |
 | *"Go to the first tab"*, *"Rename this tab"*, *"Close the security tab"* | `switch_page`, `rename_page`, `delete_page` |

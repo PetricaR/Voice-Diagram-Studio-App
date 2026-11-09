@@ -38,7 +38,9 @@ The zoom level button (bottom left) opens presets (50–200 %).
 | --- | --- |
 | "Draw a web app on Google Cloud …" | `create_diagram` (with a title shown above the diagram and on its tab) |
 | "Add a Redis cache between the API and the database" | `edit_diagram` |
-| "Document this architecture", "write the risks" | `write_text`, one call per chapter of the documentation (Markdown: `## ` sections, bullets, bold, code, tables) |
+| "Document this architecture" (or **Document this diagram** in an empty Documentation tab) | `write_text` / `write_table`, one call per chapter: an arc42-style book (see [below](#how-gemini-writes-architecture-documentation)) |
+| "Add an ADR for the cache", "write the risks", "a runbook for a database outage" | one chapter; a new decision record is appended to `decisions` |
+| "Update the documentation" | rewrites only the chapters that no longer match the diagram |
 | "Add a table of the components / ports / costs" | `write_table`: a table chapter |
 | "Add a security chapter after the overview" | `write_text` with `after: "overview"` |
 | "Open the documentation", "back to the diagram" | `switch_page` with `view: "documentation"` / `"diagram"` |
@@ -60,6 +62,45 @@ Chapters can also be added from the top bar or the contents, edited (**Enter**, 
 rows of `cell | cell`), moved up and down and deleted by hand. **Export → Documentation
 (.md)** saves the book as Markdown; the draw.io export adds a documentation page after each
 diagram that has one.
+
+### How Gemini writes architecture documentation
+
+"Document this architecture" produces a lean [arc42](https://arc42.org/overview) book, with the
+context and containers of the [C4 model](https://c4model.com) as tables and the decisions as
+[architecture decision records](https://adr.github.io) (ADRs). The chapters always have the same
+ids, so later requests ("update the documentation", "add an ADR") change them in place.
+
+| # | Chapter (id) | Tool | Content | Based on |
+| --- | --- | --- | --- | --- |
+| 1 | Introduction and goals (`overview`) | `write_text` | Purpose, top 3 quality goals with measurable targets, stakeholders | arc42 §1 |
+| 2 | Context and scope (`context`) | `write_table` | Actor or external system · Interface · Data exchanged | arc42 §3, C4 system context |
+| 3 | Building blocks (`building_blocks`) | `write_table` | Component · Technology · Responsibility · Depends on | arc42 §5, C4 containers |
+| 4 | Runtime view (`runtime`) | `write_text` | 2–3 key scenarios as numbered steps along the connections, sync or async | arc42 §6 |
+| 5 | Deployment (`deployment`) | `write_text` | Cloud, regions, networks, environments, scaling, CI/CD, observability | arc42 §7 |
+| 6 | Cross-cutting concepts (`crosscutting`) | `write_text` | Security, reliability, performance, cost | arc42 §8, Google Cloud Architecture Framework |
+| 7 | Architecture decisions (`decisions`) | `write_text` | `ADR-n` sections: status, context, decision, consequences, alternatives | arc42 §9, Nygard ADRs |
+| 8 | Risks and technical debt (`risks`) | `write_table` | Risk · Impact · Likelihood · Mitigation, most serious first | arc42 §11 |
+| 9 | Glossary (`glossary`) | `write_table` | Domain terms and acronyms, only when the diagram has them | arc42 §12 |
+
+Writing rules in the prompt (`agent/prompt.ts`):
+
+- **Grounded in the canvas.** Chapters use the exact node labels (bold at first mention, with the
+  technology), and the first column of every table holds those labels, so each line maps to the
+  diagram. Anything the diagram does not show (targets, regions, volumes, costs) is marked
+  _Assumption:_ or "to be confirmed".
+- **Written for a new team member.** Facts first, short sentences, 60–180 words per text chapter.
+- **Scaled to the request.** "A short summary" gives `overview`, `building_blocks` and `runtime`;
+  one topic gives one chapter (ADR, risks, security, runbook, SLOs).
+- **Fits the diagram type.** Flowcharts get purpose and trigger, steps with their decisions,
+  exceptions, roles and inputs/outputs; network diagrams get topology, segments, connectivity,
+  security controls and operations.
+- **Kept in sync on request.** A diagram edit never rewrites the documentation by itself;
+  "update the documentation" rewrites only the stale chapters.
+
+`npm run eval -- --only documentation` scores this against the real model (chapters, tables that
+cover every component, ADRs with consequences, risks with mitigations, an appended ADR).
+
+### Pages and history
 
 Pages are added with **+**, renamed with a double-click,
 and reordered, duplicated or closed from their **⋮** menu; closing can be undone from the

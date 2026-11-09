@@ -129,15 +129,17 @@ export const TOOL_DECLARATIONS = [
     name: 'write_text',
     description: 'Writes one chapter of the documentation of the current page. The documentation is not on the ' +
       'canvas: it is a book in its own tab, with a table of contents (chapters, and the "## " headings of each ' +
-      'chapter as its sections), and it opens at this chapter. Use it for overviews, descriptions of the ' +
-      'architecture, data flows, decisions, risks, runbooks, notes. With the id of an existing chapter it rewrites ' +
-      'that chapter (append: true adds to its end). Returns the state.',
+      'chapter as its sections), and it opens at this chapter. Use it for the text chapters of arc42-style ' +
+      'architecture documentation (introduction and goals, runtime view, deployment, cross-cutting concepts, ' +
+      'architecture decision records), and for runbooks and notes. With the id of an existing chapter it rewrites ' +
+      'that chapter (append: true adds to its end, e.g. one more ADR). Returns the state.',
     behavior: 'NON_BLOCKING',
     parameters: obj({
-      id: str('Short snake_case id of a new chapter (e.g. "overview"), or the id of an existing chapter to rewrite.'),
-      title: str('Title of the chapter in the table of contents, e.g. "Overview", "Data flow", "Security".'),
+      id: str('Short snake_case id of a new chapter (e.g. "overview", "runtime", "decisions"), or the id of an existing chapter to rewrite.'),
+      title: str('Title of the chapter in the table of contents, e.g. "Introduction and goals", "Runtime view", "Architecture decisions".'),
       text: str('Markdown body of the chapter, without the chapter title: "## " section headings, "- " bullets, ' +
-        '"1. " steps, **bold**, `code`, "| a | b |" tables. Specific to the elements of the diagram, in English.'),
+        '"1. " steps, **bold**, _italic_, `code`, "| a | b |" tables. Uses the exact labels of the diagram; ' +
+        'anything the diagram does not show is marked "_Assumption:_". In English.'),
       append: { type: 'BOOLEAN', description: 'Add the text to the end of the existing chapter instead of replacing it.' },
       after: str('Only to set the reading order: id of the chapter this one follows, or "start". New chapters go at the end.'),
       summary: str('What changed, at most 8 words (shown in the history).'),
@@ -146,12 +148,14 @@ export const TOOL_DECLARATIONS = [
   {
     name: 'write_table',
     description: 'Writes a table as a chapter of the documentation (its own tab, a book with a table of contents), ' +
-      'e.g. components and responsibilities, ports and protocols, costs, SLAs, a comparison. With the id of an ' +
-      'existing table it replaces its columns and rows (append: true adds the rows). Returns the state.',
+      'e.g. the context and scope, the building blocks (components, technologies, responsibilities), risks and ' +
+      'technical debt, a glossary, SLOs, ports and protocols, costs, a comparison. The first column holds the ' +
+      'exact labels of the diagram. With the id of an existing table it replaces its columns and rows ' +
+      '(append: true adds the rows). Returns the state.',
     behavior: 'NON_BLOCKING',
     parameters: obj({
-      id: str('Short snake_case id of a new table (e.g. "components"), or the id of an existing table to rewrite.'),
-      title: str('Title of the chapter, e.g. "Components".'),
+      id: str('Short snake_case id of a new table (e.g. "building_blocks", "risks"), or the id of an existing table to rewrite.'),
+      title: str('Title of the chapter, e.g. "Building blocks", "Risks and technical debt".'),
       columns: arrayOf(str('Column header.'), 'Column headers, 2 to 6 short ones.'),
       rows: arrayOf(arrayOf(str('Cell text.'), 'One row: one cell per column.'), 'Rows of the table.'),
       append: { type: 'BOOLEAN', description: 'Add the rows to the existing table instead of replacing them.' },
