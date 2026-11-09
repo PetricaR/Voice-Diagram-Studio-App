@@ -139,7 +139,14 @@ function serveStatic(req: IncomingMessage, res: ServerResponse, distDir: string,
     res.end();
     return;
   }
-  createReadStream(filePath).pipe(res);
+  const stream = createReadStream(filePath);
+  stream.on('error', () => {
+    if (!res.headersSent) {
+      res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    }
+    res.end();
+  });
+  stream.pipe(res);
 }
 
 function isRegularFile(path: string): boolean {

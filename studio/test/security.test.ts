@@ -100,6 +100,7 @@ describe('token API', () => {
     expect(Date.parse(sent.newSessionExpireTime) - Date.parse('2026-11-09T12:00:00Z')).toBe(NEW_SESSION_MS);
     const locked = sent.bidiGenerateContentSetup;
     expect(locked.model).toBe('models/gemini-3.8-live');
+    expect(locked.generationConfig.speechConfig.languageCode).toBe('en-US');
     expect(locked.generationConfig.speechConfig.voiceConfig.prebuiltVoiceConfig.voiceName).toBe('Zephyr');
     expect(locked.systemInstruction.parts[0].text).toMatch(/source of truth/i);
     expect(locked.tools[0].functionDeclarations.map((f: { name: string }) => f.name)).toContain('edit_diagram');

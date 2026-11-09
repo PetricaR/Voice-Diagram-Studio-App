@@ -27,10 +27,13 @@ export interface LiveSessionOptions {
 
 /** The setup of a new session, or of a resumed one when `handle` is given. */
 export function liveSetup(o: LiveSessionOptions, handle: string | null): Record<string, unknown> {
-  const generationConfig: Record<string, unknown> = { responseModalities: ['AUDIO'] };
-  if (o.voice) {
-    generationConfig.speechConfig = { voiceConfig: { prebuiltVoiceConfig: { voiceName: o.voice } } };
-  }
+  const generationConfig: Record<string, unknown> = {
+    responseModalities: ['AUDIO'],
+    speechConfig: {
+      languageCode: 'en-US',
+      ...(o.voice ? { voiceConfig: { prebuiltVoiceConfig: { voiceName: o.voice } } } : {}),
+    },
+  };
   // Only the extended thinking models accept a thinking level
   if (o.thinkingLevel && /thinking/i.test(o.model)) {
     generationConfig.thinkingConfig = { thinkingLevel: o.thinkingLevel };

@@ -63,6 +63,11 @@ function ShapeNodeView({ data, selected }: NodeProps<ShapeNodeType>) {
   const flow = FLOW_SHAPES.has(node.kind);
   const caption = node.tech;
   const gcpIcon = flow ? null : resolveGcpIconUrl(node);
+  const [iconFailed, setIconFailed] = useState(false);
+  useEffect(() => {
+    setIconFailed(false);
+  }, [gcpIcon]);
+  const showGcpIcon = Boolean(gcpIcon && !iconFailed);
   const label = editing
     ? <LabelEditor value={node.label} onDone={(v) => data.onEditLabel(node.id, v)} />
     : <div className="node-label">{node.label}</div>;
@@ -122,9 +127,9 @@ function ShapeNodeView({ data, selected }: NodeProps<ShapeNodeType>) {
           </>
         ) : (
           <>
-            <div className={`node-icon${gcpIcon ? ' has-gcp-svg' : ''}`}>
-              {gcpIcon
-                ? <img className="gcp-node-icon" src={gcpIcon} alt="" width={24} height={24} loading="lazy" decoding="async" draggable={false} />
+            <div className={`node-icon${showGcpIcon ? ' has-gcp-svg' : ''}`}>
+              {showGcpIcon
+                ? <img className="gcp-node-icon" src={gcpIcon!} alt="" width={24} height={24} decoding="async" draggable={false} onError={() => setIconFailed(true)} />
                 : <Icon name={resolveNodeIcon(node)} size={22} />}
             </div>
             <div className="node-text">

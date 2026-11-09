@@ -15,7 +15,7 @@ const obj = (properties: Record<string, Schema>, required: string[], description
 
 const nodeFields = {
   id: str('Short lowercase English snake_case id, e.g. "orders_db". Never changes.'),
-  label: str('Short label shown on the canvas, in the user\'s language.'),
+  label: str('Short label shown on the canvas, in English.'),
   kind: enumOf(NODE_KINDS, 'What the node is; decides its shape and icon.'),
   tech: str('Technology or product, e.g. "Cloud Run", "PostgreSQL", "Kafka".'),
   provider: enumOf(PROVIDERS, 'Cloud provider of the product.'),
@@ -68,7 +68,7 @@ export const TOOL_DECLARATIONS = [
     behavior: 'NON_BLOCKING',
     parameters: obj({
       base_version: { type: 'INTEGER', description: 'Version of the state this edit is based on.' },
-      summary: str('What changed, at most 8 words, in the user\'s language (shown in the history).'),
+      summary: str('What changed, at most 8 words, in English (shown in the history).'),
       add_nodes: arrayOf(obj({
         ...nodeFields,
         near: str('Only if the user says where: id of the node to put it next to.'),
@@ -137,7 +137,7 @@ export const TOOL_DECLARATIONS = [
       id: str('Short snake_case id of a new chapter (e.g. "overview"), or the id of an existing chapter to rewrite.'),
       title: str('Title of the chapter in the table of contents, e.g. "Overview", "Data flow", "Security".'),
       text: str('Markdown body of the chapter, without the chapter title: "## " section headings, "- " bullets, ' +
-        '"1. " steps, **bold**, `code`, "| a | b |" tables. Specific to the elements of the diagram, in the user\'s language.'),
+        '"1. " steps, **bold**, `code`, "| a | b |" tables. Specific to the elements of the diagram, in English.'),
       append: { type: 'BOOLEAN', description: 'Add the text to the end of the existing chapter instead of replacing it.' },
       after: str('Only to set the reading order: id of the chapter this one follows, or "start". New chapters go at the end.'),
       summary: str('What changed, at most 8 words (shown in the history).'),
