@@ -1,0 +1,39 @@
+{
+  "name": "voice-diagram-studio",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Voice-first diagram studio: speak a diagram, edit it by voice, export to draw.io",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "eval": "tsx eval/run.ts",
+    "check": "tsx server/check.ts",
+    "e2e": "node e2e/smoke.mjs && node e2e/live-mock.mjs"
+  },
+  "dependencies": {
+    "@fontsource/roboto": "^5.3.0",
+    "@material-symbols/svg-400": "^0.48.3",
+    "@material/material-color-utilities": "^0.4.0",
+    "@xyflow/react": "^12.12.1",
+    "elkjs": "^0.12.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "@vitejs/plugin-react": "^6.3.0",
+    "playwright": "^1.65.0",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.6",
+    "vitest": "^5.1.0",
+    "ws": "^8.22.2"
+  }
+}
