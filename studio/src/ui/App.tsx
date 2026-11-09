@@ -90,7 +90,7 @@ function Snackbar({ toast, onDone }: { toast: Toast | null; onDone: () => void }
 }
 
 /** Global shortcuts: undo/redo, Space to talk, / to type (zoom shortcuts are in ZoomControls). */
-function Shortcuts({ setTyping }: { setTyping: (t: boolean) => void }) {
+function Shortcuts({ focusComposer }: { focusComposer: () => void }) {
   const { store, workspace, toggleVoice } = useStudio();
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -109,7 +109,7 @@ function Shortcuts({ setTyping }: { setTyping: (t: boolean) => void }) {
         toggleVoice();
       } else if (e.key === '/') {
         e.preventDefault();
-        setTyping(true);
+        focusComposer();
       } else if (e.key === 'Escape' && workspace.view !== 'doc') {
         // In the documentation the open chapter stays selected ("this chapter")
         store.setSelection([]);
@@ -117,7 +117,7 @@ function Shortcuts({ setTyping }: { setTyping: (t: boolean) => void }) {
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [store, workspace, toggleVoice, setTyping]);
+  }, [store, workspace, toggleVoice, focusComposer]);
   return null;
 }
 
@@ -135,7 +135,9 @@ export function App() {
   const agent = useMemo(() => new VoiceAgent(workspace, () => settingsRef.current), [workspace]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [prefs, setPrefs] = useState<UiPrefs>(loadPrefs);
-  const [typing, setTyping] = useState(false);
+  // Bumped by "/" to focus the request field of the dock
+  const [focusRequest, setFocusRequest] = useState(0);
+  const focusComposer = useCallback(() => setFocusRequest((n) => n + 1), []);
   const [empty, setEmpty] = useState(true);
   const [toast, setToast] = useState<Toast | null>(null);
   const toastId = useRef(0);
@@ -248,15 +250,17 @@ export function App() {
     agent.start(true).catch(() => undefined);
   }, [agent, notify]);
 
-  // Errors of the voice session are shown once as a snackbar
-  useEffect(() => agent.subscribe(() => {
-    const s = agent.snapshot;
-    if (s.status === 'error' && s.error) {
-      const keyProblem = /key/i.test(s.error);
-      if (keyProblem) refreshLiveKey();
-      notify(s.error, keyProblem ? { label: 'Settings', run: () => setSettingsOpen(true) } : undefined);
-    }
-  }), [agent, notify, refreshLiveKey]);
+  // Errors of the voice session are shown in the dock (with Settings or Try again);
+  // a key problem also re-checks whether the server has a key
+  useEffect(() => {
+    let last: string | null = null;
+    return agent.subscribe(() => {
+      const s = agent.snapshot;
+      const error = s.status === 'error' ? s.error : null;
+      if (error && error !== last && /key/i.test(error)) refreshLiveKey();
+      last = error;
+    });
+  }, [agent, refreshLiveKey]);
 
   const studio: Studio = useMemo(() => ({
     workspace, store, agent, settings, setSettings, liveKey, refreshLiveKey, notify, toggleVoice,
@@ -286,14 +290,14 @@ export function App() {
               {empty && !docOpen && <EmptyState />}
               <ZoomControls minimap={prefs.minimap} setMinimap={(minimap) => updatePrefs({ minimap })} hidden={docOpen} />
               {docOpen && <DocView key={activeId} />}
-              <VoiceDock typing={typing} setTyping={setTyping} />
+              <VoiceDock focusRequest={focusRequest} />
               <Snackbar toast={toast} onDone={() => setToast(null)} />
             </div>
             {prefs.panelOpen && (
               <SidePanel tab={prefs.panelTab} setTab={(panelTab) => updatePrefs({ panelTab })} onClose={() => updatePrefs({ panelOpen: false })} />
             )}
           </main>
-          <Shortcuts setTyping={setTyping} />
+          <Shortcuts focusComposer={focusComposer} />
           <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
         </div>
       </ReactFlowProvider>

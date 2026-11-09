@@ -138,8 +138,9 @@ async function run(colorScheme) {
   await page.screenshot({ path: `${out}/${colorScheme}-8-settings.png` });
   await page.keyboard.press('Escape');
 
-  // Typing mode
-  await page.click('button[aria-label="Type a request"]');
+  // Typing: "/" focuses the request field of the dock
+  await page.keyboard.press('/');
+  await page.keyboard.type('Add a Redis cache between the API and the database');
   await page.waitForTimeout(200);
   await page.screenshot({ path: `${out}/${colorScheme}-9-typing.png`, clip: { x: 300, y: 700, width: 840, height: 200 } });
   await page.close();

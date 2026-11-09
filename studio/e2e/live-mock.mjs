@@ -170,9 +170,8 @@ await page.waitForSelector('.voice-dock');
 check(!(await page.evaluate(() => localStorage.getItem('studio.settings'))).includes('old-browser-key'), 'a key saved in the browser by an earlier version is deleted');
 
 async function type(text, expectStep) {
-  // Opens the text field unless it is open already (no 30 s wait for a missing button)
-  if (await page.locator('button[aria-label="Type a request"]').count() > 0) await page.click('button[aria-label="Type a request"]');
-  await page.fill('.dock-input input', text);
+  // The request field of the dock is always shown
+  await page.fill('.dock-field', text);
   await page.keyboard.press('Enter');
   await page.waitForFunction((n) => window.__studio.agent.snapshot.reply !== '' && window.__studio.store.history.length >= 0 && n >= 0, expectStep);
   for (let i = 0; i < 50 && step < expectStep; i++) await page.waitForTimeout(100);
