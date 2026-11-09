@@ -45,13 +45,14 @@ setup() {
 
 deploy() {
   local env="STUDIO_AUTH=google"
-  [[ -n "${GOOGLE_CLIENT_ID:-}" ]] && env+="@GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
-  [[ -n "${STUDIO_OWNER_EMAILS:-}" ]] && env+="@STUDIO_OWNER_EMAILS=$STUDIO_OWNER_EMAILS"
+  # "|" separates the variables: e-mail lists contain "@" and ","
+  [[ -n "${GOOGLE_CLIENT_ID:-}" ]] && env+="|GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID"
+  [[ -n "${STUDIO_OWNER_EMAILS:-}" ]] && env+="|STUDIO_OWNER_EMAILS=$STUDIO_OWNER_EMAILS"
   gcloud run deploy "$SERVICE" --source . --project "$PROJECT" --region "$REGION" \
     --service-account "$SA" \
     --max-instances "$MAX_INSTANCES" \
     --set-secrets "GEMINI_API_KEY=$KEY_SECRET:latest,SESSION_SECRET=$SESSION_SECRET_NAME:latest" \
-    --update-env-vars "^@^$env"
+    --update-env-vars "^|^$env"
 }
 
 case "${1:-}" in
