@@ -46,6 +46,7 @@ export const TOOL_DECLARATIONS = [
     description: 'Draws a complete new diagram, laid out automatically. Only when the current page is empty, or the ' +
       'user asks for a new, separate diagram (new_page: true opens it on a new page and keeps the current one), or ' +
       'explicitly asks to replace this one / start over (replace: true). Every other change is edit_diagram. ' +
+      'Pass all the nodes and all the edges in this one call: the layout is computed from the connections. ' +
       'Returns the diagram state.',
     behavior: 'NON_BLOCKING',
     parameters: obj({
@@ -55,10 +56,10 @@ export const TOOL_DECLARATIONS = [
       subtitle: str('Optional line under the title, e.g. scope, environment or version.'),
       groups: arrayOf(obj(groupFields, ['id', 'label']), 'Boundaries, e.g. cloud, region, VPC, cluster.'),
       nodes: arrayOf(obj(nodeFields, ['id', 'label', 'kind']), 'All nodes.'),
-      edges: arrayOf(obj(edgeFields, ['from', 'to']), 'All connections.'),
+      edges: arrayOf(obj(edgeFields, ['from', 'to']), 'All connections, in this same call (not in a later edit).'),
       new_page: { type: 'BOOLEAN', description: 'True to draw it on a new page (tab) and keep the current diagram. Use for every new, separate or additional diagram when the current page is not empty.' },
       replace: { type: 'BOOLEAN', description: 'True to replace the diagram on the current page (only when the user explicitly asks to replace it or start over).' },
-    }, ['diagram_type', 'nodes']),
+    }, ['diagram_type', 'nodes', 'edges']),
   },
   {
     name: 'edit_diagram',
@@ -230,7 +231,7 @@ export const TOOL_DECLARATIONS = [
     parameters: obj({
       query: str('Search query: use case, industry, agent type, architectural layer, or component (e.g. "rag document ai", "customer agent", "secops", "vector database").'),
       provider: enumOf(PROVIDERS, 'Optional cloud provider filter ("gcp", "aws", "azure", "k8s", "onprem").'),
-      category: enumOf(['customer', 'employee', 'data', 'code', 'creative', 'security', 'architecture', 'flowchart'], 'Optional blueprint category filter.'),
+      category: enumOf(['customer', 'employee', 'data', 'code', 'creative', 'security', 'architecture', 'flowchart'], 'Optional blueprint category: blueprints of this category rank first, the others still match the query.'),
     }, ['query']),
   },
   {

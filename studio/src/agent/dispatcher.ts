@@ -175,7 +175,8 @@ export async function handleToolCall(name: string, args: Record<string, unknown>
         ? `The diagram is at version ${current}, not ${base} (it was changed in the meantime, e.g. by hand). ` +
           'The state below is current; check that the edit still fits it.'
         : undefined;
-      const result = store.edit(req, { ...meta, label: typeof req.summary === 'string' && req.summary.trim() ? req.summary.trim() : undefined });
+      // Connecting a diagram that was drawn without connections lays it out from them
+      const result = await store.editConnectingNewDiagram(req, { ...meta, label: typeof req.summary === 'string' && req.summary.trim() ? req.summary.trim() : undefined });
       if (result.ok) follow(ws, result.changes);
       return editResponse(ctx, result, stale);
     }

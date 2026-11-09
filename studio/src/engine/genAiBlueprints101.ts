@@ -15,8 +15,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-1",
     "title": "#1 \u00b7 Unify online and in-store retail experiences",
     "category": "Blueprint #1 \u00b7 Retail & E-Commerce",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -68,21 +68,21 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "shoppers",
+          "label": "Shoppers",
           "kind": "user"
         },
         {
           "id": "cdn",
-          "label": "Edge CDN",
-          "kind": "gateway",
+          "label": "Static Content Cache",
+          "kind": "network",
           "tech": "Cloud CDN",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "E-commerce Microservices",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
@@ -90,61 +90,55 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "apigee",
-          "label": "API Management",
+          "label": "Inventory APIs",
           "kind": "gateway",
           "tech": "Apigee",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "spanner",
-          "label": "Global Database",
+          "label": "Store-level Inventory",
           "kind": "database",
           "tech": "Cloud Spanner",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "bq",
+          "label": "Supply Chain Analytics",
+          "kind": "analytics",
+          "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cdn"
+          "from": "shoppers",
+          "to": "cdn",
+          "label": "HTTPS"
         },
         {
           "from": "cdn",
-          "to": "gke"
+          "to": "gke",
+          "label": "dynamic requests"
         },
         {
           "from": "gke",
-          "to": "apigee"
+          "to": "apigee",
+          "label": "real-time inventory check"
         },
         {
           "from": "apigee",
-          "to": "bigquery"
+          "to": "spanner",
+          "label": "store stock"
         },
         {
-          "from": "bigquery",
-          "to": "spanner"
-        },
-        {
-          "from": "spanner",
-          "to": "vertex_ai"
+          "from": "gke",
+          "to": "bq",
+          "label": "sales stream",
+          "style": "dashed"
         }
       ]
     }
@@ -205,21 +199,21 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "stores",
+          "label": "Store Systems",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Sales & Inventory",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Demand Forecasting",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
@@ -227,37 +221,39 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "looker",
-          "label": "BI & Dashboards",
+          "label": "Stock Dashboards",
           "kind": "analytics",
           "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
+          "id": "sheets",
+          "label": "Associate Devices",
           "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Google Sheets (Google Workspace)"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "stores",
+          "to": "bq",
+          "label": "daily sales & inventory"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "historical data"
         },
         {
-          "from": "vertex_ai",
-          "to": "looker"
+          "from": "vertex",
+          "to": "looker",
+          "label": "demand predictions"
         },
         {
           "from": "looker",
-          "to": "workspace"
+          "to": "sheets",
+          "label": "recommended stock levels"
         }
       ]
     }
@@ -266,8 +262,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-3",
     "title": "#3 \u00b7 Make it easy for users to find and discover unique items on your online site",
     "category": "Blueprint #3 \u00b7 Retail & E-Commerce",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -319,71 +315,79 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "sellers",
+          "label": "Sellers",
           "kind": "user"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Item Listings",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Real-time Processing",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "gke",
-          "label": "App Workloads",
-          "kind": "container",
-          "tech": "Google Kubernetes Engine",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Items & Interactions",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "gke",
+          "label": "Search & Ranking Models",
+          "kind": "container",
+          "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "shoppers",
+          "label": "Shoppers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "sellers",
+          "to": "gcs",
+          "label": "new item"
         },
         {
           "from": "gcs",
-          "to": "dataflow"
+          "to": "df",
+          "label": "item details"
         },
         {
-          "from": "dataflow",
-          "to": "gke"
+          "from": "shoppers",
+          "to": "df",
+          "label": "interactions",
+          "style": "dashed"
         },
         {
-          "from": "gke",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "enriched data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "gke",
+          "label": "index & features"
+        },
+        {
+          "from": "shoppers",
+          "to": "gke",
+          "label": "search \u2192 ranked results"
         }
       ]
     }
@@ -439,59 +443,64 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "associate",
+          "label": "Store Associate",
           "kind": "user"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
+          "id": "device",
+          "label": "Android / ChromeOS Device",
           "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Android, ChromeOS"
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Shelf Image Analysis",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "Store Operations App",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "inventory",
+          "label": "Inventory Data",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "mobile"
+          "from": "associate",
+          "to": "device",
+          "label": "scans shelf"
         },
         {
-          "from": "mobile",
-          "to": "vision"
+          "from": "device",
+          "to": "vision",
+          "label": "shelf image"
         },
         {
           "from": "vision",
-          "to": "vertex_ai"
+          "to": "gke",
+          "label": "products & price tags"
         },
         {
-          "from": "vertex_ai",
-          "to": "gke"
+          "from": "gke",
+          "to": "inventory",
+          "label": "cross-reference"
+        },
+        {
+          "from": "gke",
+          "to": "device",
+          "label": "stock & planogram status",
+          "style": "dashed"
         }
       ]
     }
@@ -500,8 +509,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-5",
     "title": "#5 \u00b7 Create an assistant for a better shopping experience",
     "category": "Blueprint #5 \u00b7 Retail & E-Commerce",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -554,83 +563,86 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customer",
+          "label": "Customer",
           "kind": "user"
         },
         {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
-          "kind": "ai",
-          "tech": "Vertex AI Agent Builder",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "app",
+          "label": "Support App",
+          "kind": "mobile"
         },
         {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "Assistant Backend",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "gcs",
-          "label": "Object Storage",
-          "kind": "storage",
-          "tech": "Cloud Storage",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Voice Input",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "vertex",
+          "label": "Conversational AI",
+          "kind": "ai",
+          "tech": "Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "tts",
-          "label": "Text to Speech",
+          "label": "Voice Answer",
           "kind": "ai",
           "tech": "Text-to-Speech",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "gcs",
+          "label": "3D & Video Assets",
+          "kind": "storage",
+          "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "agent_builder"
+          "from": "customer",
+          "to": "app",
+          "label": "troubleshooting question"
         },
         {
-          "from": "agent_builder",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "gke"
+          "from": "app",
+          "to": "gke",
+          "label": "voice or text"
         },
         {
           "from": "gke",
-          "to": "gcs"
+          "to": "stt",
+          "label": "audio"
         },
         {
-          "from": "gcs",
-          "to": "stt"
+          "from": "gke",
+          "to": "vertex",
+          "label": "intent & answer"
         },
         {
-          "from": "stt",
-          "to": "tts"
+          "from": "gke",
+          "to": "tts",
+          "label": "spoken reply"
+        },
+        {
+          "from": "gke",
+          "to": "gcs",
+          "label": "visual aid clip"
         }
       ]
     }
@@ -639,8 +651,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-6",
     "title": "#6 \u00b7 Write differentiated product descriptions",
     "category": "Blueprint #6 \u00b7 Retail & E-Commerce",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -686,29 +698,34 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "merch",
+          "label": "Merchandiser",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "pim",
+          "label": "Product Management Tool",
+          "kind": "external"
+        },
+        {
+          "id": "run",
+          "label": "Description Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Description Generator",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Product Catalog Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
@@ -717,16 +734,25 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "merch",
+          "to": "pim",
+          "label": "key attributes"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "pim",
+          "to": "run",
+          "label": "attributes"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "run",
+          "to": "vertex",
+          "label": "detailed prompt"
+        },
+        {
+          "from": "run",
+          "to": "bq",
+          "label": "descriptions for review",
+          "style": "dashed"
         }
       ]
     }
@@ -750,7 +776,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "A customer uploads a reference photo in the app",
       "The app sends the photo to a service on Cloud Run",
       "The service uses Vertex AI Vision to convert the photo into a vector embedding",
-      "This embedding is used to query the Vector Search , which finds the most visually similar product embeddings from the indexed catalog",
+      "This embedding is used to query the Vector Search, which finds the most visually similar product embeddings from the indexed catalog",
       "The service returns the matching products to the customer in seconds"
     ],
     "keywords": [
@@ -789,13 +815,18 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customer",
+          "label": "Customer",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "app",
+          "label": "Shopping App",
+          "kind": "mobile"
+        },
+        {
+          "id": "run",
+          "label": "Visual Search Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -803,23 +834,15 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Photo Embedding",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vector_search",
-          "label": "Vector Search",
+          "id": "vs",
+          "label": "Product Embedding Index",
           "kind": "ai",
           "tech": "Vertex AI Vector Search",
           "provider": "gcp",
@@ -827,7 +850,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Product Images",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
@@ -836,24 +859,30 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "customer",
+          "to": "app",
+          "label": "reference photo"
         },
         {
-          "from": "cloud_run",
-          "to": "vision"
+          "from": "app",
+          "to": "run",
+          "label": "photo"
         },
         {
-          "from": "vision",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "vision",
+          "label": "embed photo"
         },
         {
-          "from": "vertex_ai",
-          "to": "vector_search"
+          "from": "run",
+          "to": "vs",
+          "label": "most similar products"
         },
         {
-          "from": "vector_search",
-          "to": "gcs"
+          "from": "gcs",
+          "to": "vs",
+          "label": "indexed catalog",
+          "style": "dashed"
         }
       ]
     }
@@ -862,8 +891,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-8",
     "title": "#8 \u00b7 Build a real-time product recommendation engine",
     "category": "Blueprint #8 \u00b7 Retail & E-Commerce",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -913,37 +942,37 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "shoppers",
+          "label": "Shoppers",
           "kind": "user"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Clickstream Processing",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Profiles & Embeddings",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Recommendation Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vector_search",
-          "label": "Vector Search",
+          "id": "vs",
+          "label": "Item Embedding Index",
           "kind": "ai",
           "tech": "Vertex AI Vector Search",
           "provider": "gcp",
@@ -952,20 +981,30 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "shoppers",
+          "to": "df",
+          "label": "clickstream",
+          "style": "dashed"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "profiles & embeddings"
         },
         {
-          "from": "bigquery",
-          "to": "cloud_run"
+          "from": "shoppers",
+          "to": "run",
+          "label": "browsing request"
         },
         {
-          "from": "cloud_run",
-          "to": "vector_search"
+          "from": "run",
+          "to": "bq",
+          "label": "user embedding"
+        },
+        {
+          "from": "run",
+          "to": "vs",
+          "label": "complementary items"
         }
       ]
     }
@@ -1020,66 +1059,65 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Retail & E-Commerce (Google Sheets, Gemini for Google Workspace, Google Forms (as a data source))",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customers",
+          "label": "Customers",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
+          "id": "forms",
+          "label": "Feedback Form",
           "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Google Forms",
+          "group": "ws"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "sheets",
+          "label": "Feedback Sheet",
+          "kind": "client",
+          "tech": "Google Sheets",
+          "group": "ws"
+        },
+        {
+          "id": "gemini",
+          "label": "Gemini in Sheets",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini for Google Workspace",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "analyst",
+          "label": "Analyst",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "customers",
+          "to": "forms",
+          "label": "feedback"
         },
         {
-          "from": "cloud_run",
-          "to": "workspace"
+          "from": "forms",
+          "to": "sheets",
+          "label": "responses"
         },
         {
-          "from": "workspace",
-          "to": "vertex_ai"
+          "from": "analyst",
+          "to": "gemini",
+          "label": "\"Categorize this feedback\""
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "gemini",
+          "to": "sheets",
+          "label": "category column, charts"
         }
       ]
     }
@@ -1088,8 +1126,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-10",
     "title": "#10 \u00b7 Compare vendor proposals, right from your email",
     "category": "Blueprint #10 \u00b7 Retail & E-Commerce",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -1132,66 +1170,53 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Retail & E-Commerce (Gmail, Gemini for Google Workspace)",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "vendors",
+          "label": "Vendors",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "gmail",
+          "label": "Proposal Emails",
+          "kind": "email",
+          "tech": "Gmail",
+          "group": "ws"
         },
         {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
-          "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Gemini in Gmail",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini for Google Workspace",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "buyer",
+          "label": "Buyer",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "vendors",
+          "to": "gmail",
+          "label": "proposals (PDFs, Docs)"
         },
         {
-          "from": "cloud_run",
-          "to": "workspace"
+          "from": "gmail",
+          "to": "gemini",
+          "label": "thread & attachments"
         },
         {
-          "from": "workspace",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "buyer",
+          "to": "gemini",
+          "label": "comparison prompt \u2192 summary & table"
         }
       ]
     }
@@ -1200,8 +1225,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-11",
     "title": "#11 \u00b7 Merge and duplicate product listings",
     "category": "Blueprint #11 \u00b7 Retail & E-Commerce",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Retail & E-Commerce"
     ],
@@ -1216,7 +1241,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "Dataflow calls a Vertex AI model to convert product text and images into vector embeddings",
       "The embeddings are stored in BigQuery",
       "A BigQuery ML clustering model groups items with similar embeddings into duplicate sets",
-      "These duplicate sets are sent to a review dashboard or an automated merging service. $300 in free credit to try Google Cloud AI and ML Build and test your proof of concept with $300 in free credit for new customers. Plus, all customers get free monthly usage of 20+ products, including AI APIs. Start building for free These architectural blueprints are inspired by customers who are using AI in the media, marketing, and gaming industry, such as: Formula E, The Golden State Warriors, Spotify, Warner Bros Discovery, and more "
+      "These duplicate sets are sent to a review dashboard or an automated merging service"
     ],
     "keywords": [
       "11",
@@ -1247,47 +1272,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "feeds",
+          "label": "Vendor Catalog Feeds",
+          "kind": "external"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Catalog Pipeline",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Text & Image Embeddings",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Embeddings & BigQuery ML Clustering",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "review",
+          "label": "Review Dashboard / Merge Service",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "feeds",
+          "to": "df",
+          "label": "product data"
         },
         {
-          "from": "dataflow",
-          "to": "vertex_ai"
+          "from": "df",
+          "to": "vertex",
+          "label": "text & images"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "embeddings"
+        },
+        {
+          "from": "bq",
+          "to": "review",
+          "label": "duplicate sets"
         }
       ]
     }
@@ -1347,71 +1385,74 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "commentary",
+          "label": "Live Commentary",
+          "kind": "external"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Audio Recordings",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "fn",
+          "label": "Highlights Function",
+          "kind": "function",
+          "tech": "Cloud Run functions",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Highlight Script Writer",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "tts",
-          "label": "Text to Speech",
-          "kind": "ai",
-          "tech": "Text-to-Speech",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
-          "kind": "function",
-          "tech": "Cloud Run functions",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "voice",
+          "label": "TTS Engine or Host",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "commentary",
+          "to": "gcs",
+          "label": "audio files"
         },
         {
           "from": "gcs",
-          "to": "stt"
+          "to": "fn",
+          "label": "new file",
+          "style": "dashed"
         },
         {
-          "from": "stt",
-          "to": "vertex_ai"
+          "from": "fn",
+          "to": "stt",
+          "label": "audio"
         },
         {
-          "from": "vertex_ai",
-          "to": "tts"
+          "from": "fn",
+          "to": "vertex",
+          "label": "time-stamped transcript"
         },
         {
-          "from": "tts",
-          "to": "functions"
+          "from": "fn",
+          "to": "voice",
+          "label": "podcast script"
         }
       ]
     }
@@ -1420,8 +1461,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-13",
     "title": "#13 \u00b7 Build a content recommendation engine",
     "category": "Blueprint #13 \u00b7 Media, Entertainment & Gaming",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Media, Entertainment & Gaming"
     ],
@@ -1473,83 +1514,119 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "fans",
+          "label": "Fans",
           "kind": "user"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "app",
+          "label": "Team App",
+          "kind": "mobile"
+        },
+        {
+          "id": "ps",
+          "label": "Fan & Game Events",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Stream Enrichment",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Unified Fan Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Recommendation Model",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Content Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Personalized Content",
           "kind": "ai",
           "tech": "Vertex AI Search",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "vs",
+          "label": "Content Embeddings",
+          "kind": "ai",
+          "tech": "Vertex AI Vector Search",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "fans",
+          "to": "app",
+          "label": "opens app"
         },
         {
-          "from": "pubsub",
-          "to": "dataflow"
+          "from": "app",
+          "to": "ps",
+          "label": "interactions & scores",
+          "style": "dashed"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "ps",
+          "to": "df",
+          "label": "events"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "df",
+          "to": "bq",
+          "label": "fan profiles"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "bq",
+          "to": "vertex",
+          "label": "training data"
         },
         {
-          "from": "cloud_run",
-          "to": "vai_search"
+          "from": "vertex",
+          "to": "search",
+          "label": "trained model",
+          "style": "dashed"
+        },
+        {
+          "from": "app",
+          "to": "run",
+          "label": "fan ID"
+        },
+        {
+          "from": "run",
+          "to": "search",
+          "label": "personalized content"
+        },
+        {
+          "from": "search",
+          "to": "vs",
+          "label": "similar content"
         }
       ]
     }
@@ -1609,71 +1686,86 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "dataflow",
-          "label": "Stream Processing",
-          "kind": "analytics",
-          "tech": "Dataflow",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Listening History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "df",
+          "label": "Yearly Stats Pipeline",
+          "kind": "analytics",
+          "tech": "Dataflow",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "run",
+          "label": "Asset Generator",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Script Writer",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Personalized Assets",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "listeners",
+          "label": "Listeners",
+          "kind": "user"
+        },
+        {
+          "id": "app",
+          "label": "Listener App",
+          "kind": "mobile"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "bq",
+          "to": "df",
+          "label": "a year of interactions"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "df",
+          "to": "run",
+          "label": "top stats per user"
         },
         {
-          "from": "bigquery",
-          "to": "cloud_run"
+          "from": "run",
+          "to": "gemini",
+          "label": "podcast script prompt"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gcs",
+          "label": "audio clips & images"
         },
         {
-          "from": "vertex_ai",
-          "to": "gcs"
+          "from": "listeners",
+          "to": "app",
+          "label": "opens app"
+        },
+        {
+          "from": "app",
+          "to": "gcs",
+          "label": "pre-generated assets"
         }
       ]
     }
@@ -1694,8 +1786,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a major media company with a massive archive of video content. Your challenge is making this content accessible and searchable by creating accurate, time-stamped captions and transcripts, a process that is incredibly slow and expensive to do manually. (Tech stack: Google Cloud Storage, Speech-to-Text API, Vertex AI, Cloud Functions)",
     "dataflow": [
-      "A video file is uploaded to Google Cloud Storage ",
-      "A Cloud Function triggers and sends the video's audio track to the Speech-to-Text API , specifying a model trained for media content",
+      "A video file is uploaded to Google Cloud Storage",
+      "A Cloud Function triggers and sends the video's audio track to the Speech-to-Text API, specifying a model trained for media content",
       "The API returns a detailed, time-stamped transcript",
       "For added context, the transcript can be sent to a Gemini model with a prompt like, \"Identify the different speakers in this transcript and label their lines,\" providing a rich, searchable, and accessible caption file"
     ],
@@ -1732,59 +1824,64 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "team",
+          "label": "Media Team",
           "kind": "user"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Video Archive",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "fn",
+          "label": "Caption Function",
+          "kind": "function",
+          "tech": "Cloud Run functions",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Media Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Speaker Labelling",
           "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
-          "kind": "function",
-          "tech": "Cloud Run functions",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "team",
+          "to": "gcs",
+          "label": "video upload"
         },
         {
           "from": "gcs",
-          "to": "stt"
+          "to": "fn",
+          "label": "new video",
+          "style": "dashed"
         },
         {
-          "from": "stt",
-          "to": "vertex_ai"
+          "from": "fn",
+          "to": "stt",
+          "label": "audio track"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "gemini",
+          "label": "transcript \u2192 captions"
         }
       ]
     }
@@ -1805,7 +1902,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a sports league or broadcaster with hours of event footage. Your challenge is quickly creating engaging social media clips to capitalize on exciting moments, a process that requires a social media manager to manually watch footage, select a clip, and write a caption. (Tech stack: Gemini for Google Drive, Google Drive)",
     "dataflow": [
-      "All broadcast footage from an event is saved to a shared folder in Google Drive ",
+      "All broadcast footage from an event is saved to a shared folder in Google Drive",
       "A social media manager opens the Gemini in Drive side panel",
       "They use a prompt like, \"Analyze the video files in this folder from the last hour. Find the top 3 most exciting moments based on commentary and crowd noise. For each, suggest a 5-second video clip and write three different engaging social media captions with relevant hashtags.\"",
       "Gemini provides the clips and captions directly in the Drive interface, turning an hours-long task into a single prompt"
@@ -1832,54 +1929,53 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Media, Entertainment & Gaming (Gemini for Google Drive, Google Drive)",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "footage",
+          "label": "Broadcast Footage",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "drive",
+          "label": "Shared Event Folder",
+          "kind": "client",
+          "tech": "Google Drive",
+          "group": "ws"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Gemini in Drive",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini for Google Drive",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "manager",
+          "label": "Social Media Manager",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "footage",
+          "to": "drive",
+          "label": "event videos"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "drive",
+          "to": "gemini",
+          "label": "video files"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "manager",
+          "to": "gemini",
+          "label": "top moments prompt \u2192 clips & captions"
         }
       ]
     }
@@ -1942,37 +2038,37 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "advertiser",
+          "label": "Advertiser",
           "kind": "user"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Audience Segments",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Ad Variation Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Ad Script Writer",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "tts",
-          "label": "Text to Speech",
+          "label": "Voiceovers",
           "kind": "ai",
           "tech": "Text-to-Speech",
           "provider": "gcp",
@@ -1981,20 +2077,24 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "advertiser",
+          "to": "bq",
+          "label": "campaign segments"
         },
         {
-          "from": "bigquery",
-          "to": "cloud_run"
+          "from": "bq",
+          "to": "run",
+          "label": "each segment"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gemini",
+          "label": "script prompt"
         },
         {
-          "from": "vertex_ai",
-          "to": "tts"
+          "from": "run",
+          "to": "tts",
+          "label": "scripts \u2192 audio"
         }
       ]
     }
@@ -2016,8 +2116,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a franchise business and you need to create high-quality, professional marketing materials for hundreds of local branches. Your challenge is that local owners are not graphic designers, and hiring designers for every local ad is not scalable. (Tech stack: Vertex AI, Google Cloud Storage, a custom marketing portal (built on App Engine or Cloud Run))",
     "dataflow": [
       "A local studio owner logs into a central marketing portal",
-      "They upload a photo of their students to Google Cloud Storage ",
-      "The portal provides an editing interface powered by Imagen 3 , Google's image generation model",
+      "They upload a photo of their students to Google Cloud Storage",
+      "The portal provides an editing interface powered by Imagen 3, Google's image generation model",
       "The owner can use simple prompts like, \"Extend the background of this photo to fit a vertical social media post,\" or \"Create a dynamic 'new student special' graphic using this photo.\"",
       "The AI generates professional-quality, on-brand marketing assets, empowering local franchises to create their own materials without design expertise"
     ],
@@ -2057,13 +2157,21 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "owner",
+          "label": "Studio Owner",
           "kind": "user"
         },
         {
+          "id": "portal",
+          "label": "Marketing Portal",
+          "kind": "service",
+          "tech": "Cloud Run",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Uploaded Photos",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
@@ -2071,45 +2179,34 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "imagen",
-          "label": "Creative Media AI",
+          "label": "Image Editing",
           "kind": "ai",
           "tech": "Imagen on Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "cloud_run",
-          "label": "App Service",
-          "kind": "service",
-          "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "owner",
+          "to": "portal",
+          "label": "photo & prompt"
         },
         {
-          "from": "gcs",
-          "to": "imagen"
+          "from": "portal",
+          "to": "gcs",
+          "label": "store photo"
+        },
+        {
+          "from": "portal",
+          "to": "imagen",
+          "label": "edit prompt"
         },
         {
           "from": "imagen",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "to": "gcs",
+          "label": "marketing assets",
+          "style": "dashed"
         }
       ]
     }
@@ -2118,8 +2215,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-19",
     "title": "#19 \u00b7 Search data across tens of thousands of courses",
     "category": "Blueprint #19 \u00b7 Media, Entertainment & Gaming",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Media, Entertainment & Gaming"
     ],
@@ -2130,7 +2227,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large media or education company with tens of thousands of courses, articles, and learning materials. Your challenge is helping users find the specific information they need when it's buried across this massive and diverse content library. (Tech stack: Vertex AI Search, BigQuery, Google Cloud Storage)",
     "dataflow": [
-      "All course content, including text, videos, and metadata, is indexed from sources like Google Cloud Storage and BigQuery into Vertex AI Search ",
+      "All course content, including text, videos, and metadata, is indexed from sources like Google Cloud Storage and BigQuery into Vertex AI Search",
       "A user goes to the learning platform and uses a natural language search query like, \"I want to learn about the basics of financial modeling in spreadsheets, but I only have 30 minutes.\"",
       "Vertex AI Search understands the multiple intents (topic, format, duration) and queries across the entire catalog",
       "It returns a ranked list of the most relevant results, such as a specific 10-minute video lecture and a 20-minute practical exercise, providing a much more relevant result than a simple keyword search"
@@ -2168,59 +2265,62 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Course Videos & Files",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Course Metadata",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Course Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "learners",
+          "label": "Learners",
+          "kind": "user"
+        },
+        {
+          "id": "platform",
+          "label": "Learning Platform",
+          "kind": "client"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
-        },
-        {
           "from": "gcs",
-          "to": "bigquery"
+          "to": "search",
+          "label": "index content",
+          "style": "dashed"
         },
         {
-          "from": "bigquery",
-          "to": "vai_search"
+          "from": "bq",
+          "to": "search",
+          "label": "index metadata",
+          "style": "dashed"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "learners",
+          "to": "platform",
+          "label": "natural-language query"
+        },
+        {
+          "from": "platform",
+          "to": "search",
+          "label": "query \u2192 ranked results"
         }
       ]
     }
@@ -2243,9 +2343,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "dataflow": [
       "A user submits a script and selects a digital avatar for a new video",
       "The request is sent to a rendering application running on a GKE cluster",
-      "GKE automatically scales up a pool of nodes equipped with powerful Cloud GPUs ",
+      "GKE automatically scales up a pool of nodes equipped with powerful Cloud GPUs",
       "The GPUs work in parallel to process the AI models and render the video frames at high speed",
-      "Once rendering is complete, the final video file is saved to Google Cloud Storage , and the GPU-powered nodes scale down automatically, optimizing for both speed and cost"
+      "Once rendering is complete, the final video file is saved to Google Cloud Storage, and the GPU-powered nodes scale down automatically, optimizing for both speed and cost"
     ],
     "keywords": [
       "20",
@@ -2282,47 +2382,50 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "creator",
+          "label": "Creator",
           "kind": "user"
         },
         {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "Rendering Service",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "gcs",
-          "label": "Object Storage",
-          "kind": "storage",
-          "tech": "Cloud Storage",
+          "id": "gpu",
+          "label": "Autoscaled GPU Node Pool",
+          "kind": "server",
+          "tech": "Cloud GPUs",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "gcs",
+          "label": "Rendered Videos",
+          "kind": "storage",
+          "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gke"
+          "from": "creator",
+          "to": "gke",
+          "label": "script & avatar"
         },
         {
           "from": "gke",
-          "to": "gcs"
+          "to": "gpu",
+          "label": "render jobs"
         },
         {
-          "from": "gcs",
-          "to": "vertex_ai"
+          "from": "gpu",
+          "to": "gcs",
+          "label": "final video"
         }
       ]
     }
@@ -2331,8 +2434,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-21",
     "title": "#21 \u00b7 Create a recommendations experience",
     "category": "Blueprint #21 \u00b7 Media, Entertainment & Gaming",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Media, Entertainment & Gaming"
     ],
@@ -2343,11 +2446,11 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a major broadcaster with a huge catalog of content, from live sports to soap operas. Your challenge is to keep viewers engaged by surfacing content that is personally relevant to them from across your entire diverse portfolio, rather than just showing them what's popular. (Tech stack: BigQuery, Vertex AI, Dataflow, Cloud Run)",
     "dataflow": [
-      "Real-time viewer interaction data streams into a Dataflow pipeline, which processes the events and updates viewer profiles in BigQuery ",
+      "Real-time viewer interaction data streams into a Dataflow pipeline, which processes the events and updates viewer profiles in BigQuery",
       "The unified viewer data in BigQuery is used to train a Vertex AI Vertex AI Search model",
-      "When a viewer opens the streaming app, a request is sent to a service on Cloud Run ",
+      "When a viewer opens the streaming app, a request is sent to a service on Cloud Run",
       "The service queries the Vertex AI Search model with the viewer's ID",
-      "The model returns a personalized list of content, such as \"Because you watched the soccer match, you might also like this sports documentary,\" creating a highly engaging and personalized experience. $300 in free credit to try Google Cloud data analytics Build intelligent apps using real-time data insights with $300 in free credit for new customers. Plus, all customers get free monthly usage of 20+ products, including BigQuery. Start building for free These architectural blueprints are inspired by customers who are using AI in the automotive and logistics industry, such as: Volkswagen of America, PODS, Uber, UPS, BMW Group, and more "
+      "The model returns a personalized list of content, such as \"Because you watched the soccer match, you might also like this sports documentary,\" creating a highly engaging and personalized experience"
     ],
     "keywords": [
       "21",
@@ -2379,45 +2482,42 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "viewers",
+          "label": "Viewers",
           "kind": "user"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "app",
+          "label": "Streaming App",
+          "kind": "client"
+        },
+        {
+          "id": "df",
+          "label": "Viewer Events",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Viewer Profiles",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Recommendation Model",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Recommendation API",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -2426,24 +2526,36 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "viewers",
+          "to": "app",
+          "label": "opens app"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "app",
+          "to": "df",
+          "label": "viewing events",
+          "style": "dashed"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "df",
+          "to": "bq",
+          "label": "profiles"
         },
         {
-          "from": "vertex_ai",
-          "to": "vai_search"
+          "from": "bq",
+          "to": "search",
+          "label": "training data",
+          "style": "dashed"
         },
         {
-          "from": "vai_search",
-          "to": "cloud_run"
+          "from": "app",
+          "to": "run",
+          "label": "viewer ID"
+        },
+        {
+          "from": "run",
+          "to": "search",
+          "label": "recommendations"
         }
       ]
     }
@@ -2452,8 +2564,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-22",
     "title": "#22 \u00b7 Build an AI-powered interactive owner's manual",
     "category": "Blueprint #22 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -2465,7 +2577,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're an automaker or manufacturer of complex products. Your challenge is that traditional paper owner's manuals are cumbersome, difficult to search, and rarely used by customers, leading to frustration and increased calls to support centers for simple questions. (Tech stack: Vertex AI, AlloyDB for PostgreSQL, Cloud Run, Google Cloud Storage)",
     "dataflow": [
       "All owner's manual content is processed and chunked into vector embeddings, which are stored in AlloyDB",
-      "When a driver uses the app to ask a question like, \"How do I change a flat tire?\" , and the query is sent to a service on Cloud Run",
+      "When a driver uses the app to ask a question like, \"How do I change a flat tire?\", and the query is sent to a service on Cloud Run",
       "For multimodal queries, the user points their phone's camera at a dashboard light; the image is sent to Vertex AI Vision to identify it, and this information is added to the query",
       "The service finds the most relevant manual sections from AlloyDB and sends them, along with the user's question, to Gemini, which generates a clear, conversational answer"
     ],
@@ -2505,21 +2617,42 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "alloydb",
-          "label": "Vector & Operational DB",
-          "kind": "database",
-          "tech": "AlloyDB",
+          "id": "gcs",
+          "label": "Owner's Manual Content",
+          "kind": "storage",
+          "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "emb",
+          "label": "Chunk Embeddings",
+          "kind": "ai",
+          "tech": "Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "alloy",
+          "label": "Manual Vectors",
+          "kind": "database",
+          "tech": "AlloyDB for PostgreSQL",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "driver",
+          "label": "Driver",
+          "kind": "user"
+        },
+        {
+          "id": "app",
+          "label": "Owner App",
+          "kind": "mobile"
+        },
+        {
+          "id": "run",
+          "label": "Manual Assistant",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -2527,49 +2660,56 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Dashboard Light Recognition",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Answer Generation",
           "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "gcs",
-          "label": "Object Storage",
-          "kind": "storage",
-          "tech": "Cloud Storage",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "alloydb"
+          "from": "gcs",
+          "to": "emb",
+          "label": "chunks"
         },
         {
-          "from": "alloydb",
-          "to": "cloud_run"
+          "from": "emb",
+          "to": "alloy",
+          "label": "vector embeddings"
         },
         {
-          "from": "cloud_run",
-          "to": "vision"
+          "from": "driver",
+          "to": "app",
+          "label": "question or camera photo"
         },
         {
-          "from": "vision",
-          "to": "vertex_ai"
+          "from": "app",
+          "to": "run",
+          "label": "query"
         },
         {
-          "from": "vertex_ai",
-          "to": "gcs"
+          "from": "run",
+          "to": "vision",
+          "label": "dashboard photo"
+        },
+        {
+          "from": "run",
+          "to": "alloy",
+          "label": "vector search"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "sections + question"
         }
       ]
     }
@@ -2631,59 +2771,74 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "vehicle",
+          "label": "Vehicle Audio",
+          "kind": "external"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Audio Chunks",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "fn",
+          "label": "Safety Check",
+          "kind": "function",
+          "tech": "Cloud Run functions",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Distress Classifier",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "functions",
-          "label": "Event Functions",
-          "kind": "function",
-          "tech": "Cloud Run functions",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "dash",
+          "label": "Security Dashboard",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "vehicle",
+          "to": "ps",
+          "label": "audio stream"
         },
         {
-          "from": "pubsub",
-          "to": "stt"
+          "from": "ps",
+          "to": "fn",
+          "label": "each chunk",
+          "style": "dashed"
         },
         {
-          "from": "stt",
-          "to": "vertex_ai"
+          "from": "fn",
+          "to": "stt",
+          "label": "audio snippet"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "gemini",
+          "label": "transcript \u2192 Red / Green"
+        },
+        {
+          "from": "fn",
+          "to": "dash",
+          "label": "Red alert + location"
         }
       ]
     }
@@ -2692,8 +2847,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-24",
     "title": "#24 \u00b7 Deploy dynamic, location-aware digital advertising",
     "category": "Blueprint #24 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "creative",
+    "icon": "shopping_cart",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -2745,13 +2900,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "truck",
+          "label": "Truck GPS Device",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Billboard Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -2759,45 +2914,59 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
-          "tech": "Google Maps Platform",
+          "label": "Neighborhood Lookup",
+          "kind": "api",
+          "tech": "Google Maps Platform (Geocoding API)",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Local Demographics",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Headline Writer",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "billboard",
+          "label": "Digital Billboard",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "truck",
+          "to": "run",
+          "label": "GPS coordinates"
         },
         {
-          "from": "cloud_run",
-          "to": "maps"
+          "from": "run",
+          "to": "maps",
+          "label": "geocode"
         },
         {
-          "from": "maps",
-          "to": "bigquery"
+          "from": "run",
+          "to": "bq",
+          "label": "local interests"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gemini",
+          "label": "headline prompt"
+        },
+        {
+          "from": "run",
+          "to": "billboard",
+          "label": "best headline"
         }
       ]
     }
@@ -2806,8 +2975,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-25",
     "title": "#25 \u00b7 Build a productivity agent for customer service teams",
     "category": "Blueprint #25 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -2857,47 +3026,77 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "interactions",
+          "label": "Chats & Emails",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Interaction History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "agent",
+          "label": "Service Agent",
+          "kind": "user"
+        },
+        {
+          "id": "crm",
+          "label": "CRM",
+          "kind": "external"
+        },
+        {
+          "id": "fn",
+          "label": "Ticket Summarizer",
+          "kind": "function",
+          "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "functions",
-          "label": "Event Functions",
-          "kind": "function",
-          "tech": "Cloud Run functions",
+          "id": "gemini",
+          "label": "Summary & Sentiment",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "interactions",
+          "to": "bq",
+          "label": "stored"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "agent",
+          "to": "crm",
+          "label": "opens ticket"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "crm",
+          "to": "fn",
+          "label": "new ticket",
+          "style": "dashed"
+        },
+        {
+          "from": "fn",
+          "to": "bq",
+          "label": "customer history"
+        },
+        {
+          "from": "fn",
+          "to": "gemini",
+          "label": "summarize prompt"
+        },
+        {
+          "from": "fn",
+          "to": "crm",
+          "label": "summary in the ticket",
+          "style": "dashed"
         }
       ]
     }
@@ -2957,47 +3156,74 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "vehicles",
+          "label": "Vehicle Telematics",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Telematics Warehouse",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "bqml",
+          "label": "Fuel, Safety & Route Models",
+          "kind": "ai",
+          "tech": "BigQuery ML",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "vertex",
+          "label": "Model Registry & Serving",
+          "kind": "ai",
+          "tech": "Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
           "id": "looker",
-          "label": "BI & Dashboards",
+          "label": "Fleet Dashboard",
           "kind": "analytics",
           "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "managers",
+          "label": "Fleet Managers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "vehicles",
+          "to": "bq",
+          "label": "billions of data points"
         },
         {
-          "from": "bigquery",
-          "to": "looker"
+          "from": "bq",
+          "to": "bqml",
+          "label": "training data"
         },
         {
-          "from": "looker",
-          "to": "vertex_ai"
+          "from": "bqml",
+          "to": "vertex",
+          "label": "registered models",
+          "style": "dashed"
+        },
+        {
+          "from": "bqml",
+          "to": "looker",
+          "label": "insights"
+        },
+        {
+          "from": "managers",
+          "to": "looker",
+          "label": "routing & training decisions"
         }
       ]
     }
@@ -3055,47 +3281,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sources",
+          "label": "News, Social & Financial Reports",
+          "kind": "external"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Public Data Ingestion",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "suppliers",
+          "label": "Internal Supplier Data",
+          "kind": "external"
+        },
+        {
+          "id": "bq",
+          "label": "Supplier Risk Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Sentiment & Entity Analysis",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "dash",
+          "label": "Risk Dashboard",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "sources",
+          "to": "ps",
+          "label": "feeds"
         },
         {
-          "from": "pubsub",
-          "to": "bigquery"
+          "from": "ps",
+          "to": "bq",
+          "label": "stream"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "suppliers",
+          "to": "bq",
+          "label": "supplier records"
+        },
+        {
+          "from": "bq",
+          "to": "gemini",
+          "label": "unstructured text"
+        },
+        {
+          "from": "gemini",
+          "to": "dash",
+          "label": "supplier risk scores"
         }
       ]
     }
@@ -3104,8 +3353,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-28",
     "title": "#28 \u00b7 Build a digital twin of your distribution network",
     "category": "Blueprint #28 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -3117,7 +3366,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a logistics and shipping company operating a vast, complex network of vehicles, warehouses, and sorting facilities. Your challenge is a lack of a single, real-time view of your entire operation, making it difficult to optimize routes, predict delays, and provide customers with accurate tracking information. (Tech stack: Pub/Sub, Dataflow, BigQuery, Vertex AI, Google Maps Platform)",
     "dataflow": [
       "IoT sensors on packages, vehicles, and in facilities stream real-time location and status data to Pub/Sub",
-      "A Dataflow pipeline processes this massive stream of data, cleansing and structuring it before loading it into BigQuery ",
+      "A Dataflow pipeline processes this massive stream of data, cleansing and structuring it before loading it into BigQuery",
       "Vertex AI models use this historical and real-time data to run thousands of simulations, predicting potential bottlenecks and optimizing routes",
       "The entire network state is visualized on a Google Maps Platform interface, creating a \"digital twin\" that allows operators to see the entire network at a glance and customers to track their packages with pinpoint accuracy"
     ],
@@ -3157,37 +3406,37 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "iot",
+          "label": "IoT Sensors",
+          "kind": "external"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Location & Status Stream",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Stream Cleansing",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Network History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Route Simulations",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
@@ -3195,33 +3444,48 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
+          "label": "Digital Twin Map",
+          "kind": "api",
           "tech": "Google Maps Platform",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "people",
+          "label": "Operators & Customers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "iot",
+          "to": "ps",
+          "label": "real-time telemetry"
         },
         {
-          "from": "pubsub",
-          "to": "dataflow"
+          "from": "ps",
+          "to": "df",
+          "label": "events"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "structured data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "historical & live data"
         },
         {
-          "from": "vertex_ai",
-          "to": "maps"
+          "from": "vertex",
+          "to": "maps",
+          "label": "bottlenecks & routes"
+        },
+        {
+          "from": "people",
+          "to": "maps",
+          "label": "network view, tracking"
         }
       ]
     }
@@ -3230,8 +3494,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-29",
     "title": "#29 \u00b7 Optimize industrial planning with 3D digital twins",
     "category": "Blueprint #29 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -3282,21 +3546,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "drones",
+          "label": "Drones & Mobile Scans",
+          "kind": "mobile"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Facility Images",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
@@ -3304,37 +3560,56 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Object & Dimension Detection",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "engine3d",
+          "label": "3D Modeling Engine",
+          "kind": "external"
+        },
+        {
+          "id": "gemini",
+          "label": "Planning Simulations",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "planners",
+          "label": "Planners",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "mobile"
-        },
-        {
-          "from": "mobile",
-          "to": "gcs"
+          "from": "drones",
+          "to": "gcs",
+          "label": "thousands of images"
         },
         {
           "from": "gcs",
-          "to": "vision"
+          "to": "vision",
+          "label": "images"
         },
         {
           "from": "vision",
-          "to": "vertex_ai"
+          "to": "engine3d",
+          "label": "objects & dimensions"
+        },
+        {
+          "from": "engine3d",
+          "to": "gemini",
+          "label": "digital twin"
+        },
+        {
+          "from": "planners",
+          "to": "gemini",
+          "label": "what-if questions"
         }
       ]
     }
@@ -3343,8 +3618,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-30",
     "title": "#30 \u00b7 Bring your employees up to speed on AI",
     "category": "Blueprint #30 \u00b7 Automotive, Supply Chain & Logistics",
-    "agentCategory": "code",
-    "icon": "code",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Automotive, Supply Chain & Logistics"
     ],
@@ -3395,47 +3670,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sensors",
+          "label": "Factory Sensors & QC",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Sensor & Quality Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "ui",
+          "label": "No-code Interface",
+          "kind": "service",
+          "tech": "App Engine",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "automl",
+          "label": "Defect Prediction Model",
+          "kind": "ai",
+          "tech": "Vertex AI AutoML",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "worker",
+          "label": "Factory Worker",
+          "kind": "user"
+        },
+        {
+          "id": "line",
+          "label": "Production Line",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "sensors",
+          "to": "bq",
+          "label": "readings"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "worker",
+          "to": "ui",
+          "label": "dataset & goal"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "ui",
+          "to": "automl",
+          "label": "train, test & deploy"
+        },
+        {
+          "from": "bq",
+          "to": "automl",
+          "label": "training data"
+        },
+        {
+          "from": "automl",
+          "to": "line",
+          "label": "real-time defect flags"
         }
       ]
     }
@@ -3460,7 +3758,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "When a customer interacts with the chat assistant on your website, their query is sent to a service on Cloud Run",
       "The service uses the Agent Builder to understand the user's intent and retrieve relevant product information",
       "For complex or conversational queries, the retrieved information is passed to Gemini with a prompt like, \"A customer is asking for a durable, family-friendly car. Based on these three models, explain which is the best fit and why.\"",
-      "Gemini generates a helpful, conversational response that guides the customer to the right product, increasing conversion. $300 in free credit to try Google Cloud infrastructure Power your applications using scalable and flexible computing resources with $300 in free credit for new customers. Plus, all customers get free monthly usage of 20+ products, including Compute Engine. Start building for free These architectural blueprints are inspired by customers who are using AI in the financial services industry, such as: Bud Financial, Deutsche Bank, Discover Financial, Scotiabank, and more "
+      "Gemini generates a helpful, conversational response that guides the customer to the right product, increasing conversion"
     ],
     "keywords": [
       "31",
@@ -3495,71 +3793,74 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Catalog & History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
+          "id": "agent",
+          "label": "Shopping Agent",
           "kind": "ai",
           "tech": "Vertex AI Agent Builder",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "customer",
+          "label": "Customer",
+          "kind": "user"
+        },
+        {
+          "id": "site",
+          "label": "Website Chat",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Chat Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "gce",
-          "label": "Compute Tier",
-          "kind": "server",
-          "tech": "Compute Engine",
+          "id": "gemini",
+          "label": "Conversational Answers",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "bq",
+          "to": "agent",
+          "label": "indexed catalog & history",
+          "style": "dashed"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "customer",
+          "to": "site",
+          "label": "question"
         },
         {
-          "from": "vertex_ai",
-          "to": "agent_builder"
+          "from": "site",
+          "to": "run",
+          "label": "query"
         },
         {
-          "from": "agent_builder",
-          "to": "cloud_run"
+          "from": "run",
+          "to": "agent",
+          "label": "intent & products"
         },
         {
-          "from": "cloud_run",
-          "to": "gce"
+          "from": "run",
+          "to": "gemini",
+          "label": "products + question"
         }
       ]
     }
@@ -3568,8 +3869,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-32",
     "title": "#32 \u00b7 Automate banking tasks with a financial LLM",
     "category": "Blueprint #32 \u00b7 Financial Services & Insurance",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -3618,59 +3919,84 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "core",
+          "label": "Core Banking",
+          "kind": "external"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Transactions",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
+          "id": "fn",
+          "label": "Overdraft Detector",
           "kind": "function",
           "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Account History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Financial LLM (fine-tuned)",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "transfer",
+          "label": "Transfer API",
+          "kind": "external"
+        },
+        {
+          "id": "customer",
+          "label": "Customer",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "core",
+          "to": "ps",
+          "label": "real-time transactions"
         },
         {
-          "from": "pubsub",
-          "to": "vertex_ai"
+          "from": "ps",
+          "to": "fn",
+          "label": "each transaction",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "bq",
+          "label": "account history"
         },
         {
-          "from": "functions",
-          "to": "bigquery"
+          "from": "fn",
+          "to": "gemini",
+          "label": "best action?"
+        },
+        {
+          "from": "fn",
+          "to": "transfer",
+          "label": "move $50 from savings"
+        },
+        {
+          "from": "fn",
+          "to": "customer",
+          "label": "proactive notification"
         }
       ]
     }
@@ -3679,8 +4005,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-33",
     "title": "#33 \u00b7 Create an AI mortgage agent to personalize quotes",
     "category": "Blueprint #33 \u00b7 Financial Services & Insurance",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -3731,47 +4057,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "borrower",
+          "label": "Borrower",
           "kind": "user"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Quote Uploads",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Rate Comparison Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Quote Extraction & Messaging",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "rates",
+          "label": "Internal Rate Tables",
+          "kind": "database"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "borrower",
+          "to": "gcs",
+          "label": "competitor's quote"
         },
         {
           "from": "gcs",
-          "to": "cloud_run"
+          "to": "run",
+          "label": "document"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gemini",
+          "label": "extract terms, write comparison"
+        },
+        {
+          "from": "run",
+          "to": "rates",
+          "label": "our rates"
         }
       ]
     }
@@ -3831,59 +4170,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "call",
+          "label": "Client & Advisor Call",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Live Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Call Summary",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "crm",
+          "label": "CRM",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
-        },
-        {
-          "from": "cloud_run",
-          "to": "stt"
+          "from": "call",
+          "to": "stt",
+          "label": "call audio"
         },
         {
           "from": "stt",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "full transcript"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "gemini",
+          "to": "crm",
+          "label": "summary & action items"
         }
       ]
     }
@@ -3892,8 +4219,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-35",
     "title": "#35 \u00b7 Accelerate underwriting with AI-powered document analysis",
     "category": "Blueprint #35 \u00b7 Financial Services & Insurance",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -3941,13 +4268,18 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "broker",
+          "label": "Broker",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "portal",
+          "label": "Upload Portal",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Underwriting Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -3955,45 +4287,64 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Financial Document Parser",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Borrower Financials",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Risk Analysis",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "underwriter",
+          "label": "Underwriter",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "broker",
+          "to": "portal",
+          "label": "pay stubs & statements"
         },
         {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "portal",
+          "to": "run",
+          "label": "documents"
         },
         {
-          "from": "docai",
-          "to": "bigquery"
+          "from": "run",
+          "to": "docai",
+          "label": "extract income, assets, debts"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "bq",
+          "label": "structured data"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "check against guidelines"
+        },
+        {
+          "from": "run",
+          "to": "underwriter",
+          "label": "risk analysis"
         }
       ]
     }
@@ -4055,47 +4406,63 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customer",
+          "label": "Customer",
           "kind": "user"
         },
         {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
+          "id": "chat",
+          "label": "Chat Platform",
+          "kind": "client"
+        },
+        {
+          "id": "dialogflow",
+          "label": "Transfer Agent",
           "kind": "ai",
-          "tech": "Vertex AI Agent Builder",
+          "tech": "Dialogflow CX",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
+          "id": "fn",
+          "label": "Transfer Executor",
           "kind": "function",
           "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "core",
+          "label": "Core Banking",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "agent_builder"
+          "from": "customer",
+          "to": "chat",
+          "label": "\"Send $500 to the UK\""
         },
         {
-          "from": "agent_builder",
-          "to": "vertex_ai"
+          "from": "chat",
+          "to": "dialogflow",
+          "label": "messages & answers"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "dialogflow",
+          "to": "fn",
+          "label": "collected details"
+        },
+        {
+          "from": "fn",
+          "to": "core",
+          "label": "execute transfer"
+        },
+        {
+          "from": "fn",
+          "to": "chat",
+          "label": "confirmation",
+          "style": "dashed"
         }
       ]
     }
@@ -4104,8 +4471,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-37",
     "title": "#37 \u00b7 Build an AI research assistant for financial analysts",
     "category": "Blueprint #37 \u00b7 Financial Services & Insurance",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -4150,47 +4517,71 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "analyst",
+          "label": "Financial Analyst",
           "kind": "user"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "tool",
+          "label": "Research Tool",
+          "kind": "client"
+        },
+        {
+          "id": "bq",
+          "label": "Proprietary Datasets",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Market Data Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "market",
+          "label": "Approved Market Data",
+          "kind": "external"
+        },
+        {
+          "id": "gemini",
+          "label": "Report Drafting",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "analyst",
+          "to": "tool",
+          "label": "research prompt"
         },
         {
-          "from": "bigquery",
-          "to": "vai_search"
+          "from": "tool",
+          "to": "bq",
+          "label": "query"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "tool",
+          "to": "search",
+          "label": "market data"
+        },
+        {
+          "from": "market",
+          "to": "search",
+          "label": "indexed sources",
+          "style": "dashed"
+        },
+        {
+          "from": "tool",
+          "to": "gemini",
+          "label": "retrieved data \u2192 draft note"
         }
       ]
     }
@@ -4199,8 +4590,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-38",
     "title": "#38 \u00b7 Automate insurance claims processing with multimodal AI",
     "category": "Blueprint #38 \u00b7 Financial Services & Insurance",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -4247,13 +4638,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "claimant",
+          "label": "Claimant",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Claims Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -4261,7 +4652,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Claim Documents",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
@@ -4269,37 +4660,41 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Damage Photos",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Validation & Payout",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "claimant",
+          "to": "run",
+          "label": "documents & photos"
         },
         {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "run",
+          "to": "docai",
+          "label": "text documents"
         },
         {
-          "from": "docai",
-          "to": "vision"
+          "from": "run",
+          "to": "vision",
+          "label": "images"
         },
         {
-          "from": "vision",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gemini",
+          "label": "structured claim \u2192 decision & payout"
         }
       ]
     }
@@ -4308,8 +4703,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-39",
     "title": "#39 \u00b7 Build an AI agent to extract data from legal documents",
     "category": "Blueprint #39 \u00b7 Financial Services & Insurance",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Financial Services & Insurance"
     ],
@@ -4356,59 +4751,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "advisor",
+          "label": "Financial Advisor",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Trust Document Parser",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Clause Extraction (fine-tuned)",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "platform",
+          "label": "Planning Platform",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
-        },
-        {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "advisor",
+          "to": "docai",
+          "label": "trust PDF"
         },
         {
           "from": "docai",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "structured text"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "gemini",
+          "to": "platform",
+          "label": "beneficiaries, trustees, rules (JSON)"
         }
       ]
     }
@@ -4469,47 +4852,57 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "jira",
+          "label": "Jira",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
+          "id": "svc",
+          "label": "Ticket-to-Fix Service",
           "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "codeassist",
+          "label": "Code Fix Generator",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini Code Assist",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "repo",
+          "label": "Private Codebase",
+          "kind": "external"
+        },
+        {
+          "id": "dev",
+          "label": "Developer",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "jira",
+          "to": "svc",
+          "label": "new bug webhook",
+          "style": "dashed"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "svc",
+          "to": "codeassist",
+          "label": "bug description prompt"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "repo",
+          "to": "codeassist",
+          "label": "codebase context",
+          "style": "dashed"
+        },
+        {
+          "from": "codeassist",
+          "to": "dev",
+          "label": "pull request to review"
         }
       ]
     }
@@ -4534,7 +4927,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "Vertex AI machine learning models are continuously trained on this historical data to learn the patterns of both legitimate and fraudulent activity",
       "When a new transaction occurs, the data is sent to the deployed fraud detection model in real-time",
       "The model returns a risk score in milliseconds",
-      "If the score is high, the transaction can be automatically blocked or flagged for manual review, preventing fraud before it happens. These architectural blueprints are inspired by customers who are using AI in the healthcare and life sciences industry, such as: Bayer, Mayo Clinic, Clivi, Orby, Hackensack Meridian Health, and more "
+      "If the score is high, the transaction can be automatically blocked or flagged for manual review, preventing fraud before it happens"
     ],
     "keywords": [
       "41",
@@ -4568,47 +4961,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "events",
+          "label": "Transactions & Behavior",
+          "kind": "external"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Event Streaming",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Transaction History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Fraud Detection Model",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "payments",
+          "label": "New Transactions",
+          "kind": "external"
+        },
+        {
+          "id": "review",
+          "label": "Fraud Review",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "events",
+          "to": "df",
+          "label": "real-time events"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "stored"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "continuous training"
+        },
+        {
+          "from": "payments",
+          "to": "vertex",
+          "label": "score in milliseconds"
+        },
+        {
+          "from": "vertex",
+          "to": "review",
+          "label": "block or flag"
         }
       ]
     }
@@ -4617,8 +5033,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-42",
     "title": "#42 \u00b7 Enable personalized and continuous patient monitoring",
     "category": "Blueprint #42 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -4670,71 +5086,87 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "patient",
+          "label": "Patient",
           "kind": "user"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "device",
+          "label": "Glucose Monitor / App",
+          "kind": "mobile",
+          "tech": "IoT devices"
+        },
+        {
+          "id": "ps",
+          "label": "Patient Telemetry",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Normalization",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Patient Records",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Trend & Anomaly Model",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
+          "id": "gemini",
+          "label": "Personalized Message",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "patient",
+          "to": "device",
+          "label": "readings"
         },
         {
-          "from": "pubsub",
-          "to": "dataflow"
+          "from": "device",
+          "to": "ps",
+          "label": "real-time data"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "ps",
+          "to": "df",
+          "label": "events"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "df",
+          "to": "bq",
+          "label": "per patient"
         },
         {
-          "from": "vertex_ai",
-          "to": "mobile"
+          "from": "bq",
+          "to": "vertex",
+          "label": "trends"
+        },
+        {
+          "from": "vertex",
+          "to": "gemini",
+          "label": "anomaly alert \u2192 coaching message"
         }
       ]
     }
@@ -4743,8 +5175,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-43",
     "title": "#43 \u00b7 Build an AI assistant for radiology workflows",
     "category": "Blueprint #43 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -4755,9 +5187,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a healthcare provider, and your radiologists are facing immense pressure from increasing workloads. Your challenge is helping them analyze complex images, search for relevant prior studies, and create regulatory-compliant reports more efficiently and accurately. (Tech stack: Vertex AI, Google Cloud Healthcare API, PACS system)",
     "dataflow": [
-      "A new radiology image is ingested and de-identified via the Healthcare API and stored in a PACS ",
+      "A new radiology image is ingested and de-identified via the Healthcare API and stored in a PACS",
       "The image is sent to a Vertex AI vision model to detect and highlight potential areas of interest",
-      "A radiologist can use Vertex AI Search , which is indexed on millions of prior anonymized studies, to find similar cases",
+      "A radiologist can use Vertex AI Search, which is indexed on millions of prior anonymized studies, to find similar cases",
       "After review, the radiologist dictates their findings, and Gemini helps draft a structured, compliant report, which is then finalized and logged, freeing up the radiologist to focus on complex diagnostic work"
     ],
     "keywords": [
@@ -4793,59 +5225,83 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "modality",
+          "label": "Imaging Modality",
+          "kind": "external"
         },
         {
-          "id": "healthcare_ai",
-          "label": "Clinical Data & MedLM",
-          "kind": "ai",
+          "id": "hapi",
+          "label": "De-identification",
+          "kind": "api",
           "tech": "Cloud Healthcare API",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vision",
-          "label": "Vision & Video AI",
-          "kind": "ai",
-          "tech": "Vertex AI Vision",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "pacs",
+          "label": "PACS",
+          "kind": "external"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vision",
+          "label": "Area-of-Interest Detection",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Similar Case Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Report Drafting",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "radiologist",
+          "label": "Radiologist",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "healthcare_ai"
+          "from": "modality",
+          "to": "hapi",
+          "label": "new image"
         },
         {
-          "from": "healthcare_ai",
-          "to": "vision"
+          "from": "hapi",
+          "to": "pacs",
+          "label": "de-identified study"
+        },
+        {
+          "from": "pacs",
+          "to": "vision",
+          "label": "image"
         },
         {
           "from": "vision",
-          "to": "vertex_ai"
+          "to": "radiologist",
+          "label": "highlighted areas"
         },
         {
-          "from": "vertex_ai",
-          "to": "vai_search"
+          "from": "radiologist",
+          "to": "search",
+          "label": "similar prior cases"
+        },
+        {
+          "from": "radiologist",
+          "to": "gemini",
+          "label": "dictated findings \u2192 structured report"
         }
       ]
     }
@@ -4854,8 +5310,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-44",
     "title": "#44 \u00b7 Create a virtual assistant for caregiver shift handoffs",
     "category": "Blueprint #44 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -4869,7 +5325,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "As a nurse ends their shift, they speak into a device and summarize their patient's status",
       "Speech-to-Text transcribes their summary in real-time",
       "The transcript is sent to Gemini with a prompt like, \"Convert this unstructured shift summary into a structured report with sections for 'Vitals', 'Medication Administered', 'Patient Observations', and 'Action Items for Next Shift'.\"",
-      "The structured summary is automatically placed in the patient's EHR , allowing the incoming caregiver to get a complete and consistent overview in seconds. For a more detailed example, check out this blog"
+      "The structured summary is automatically placed in the patient's EHR, allowing the incoming caregiver to get a complete and consistent overview in seconds. For a more detailed example, check out this blog"
     ],
     "keywords": [
       "44",
@@ -4907,59 +5363,57 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "nurse",
+          "label": "Outgoing Nurse",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Shift Summary Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Structured Handoff",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "ehr",
+          "label": "EHR",
+          "kind": "external"
+        },
+        {
+          "id": "next",
+          "label": "Incoming Caregiver",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
-        },
-        {
-          "from": "cloud_run",
-          "to": "stt"
+          "from": "nurse",
+          "to": "stt",
+          "label": "spoken summary"
         },
         {
           "from": "stt",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "transcript"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "gemini",
+          "to": "ehr",
+          "label": "vitals, medication, actions"
+        },
+        {
+          "from": "ehr",
+          "to": "next",
+          "label": "complete overview"
         }
       ]
     }
@@ -5018,47 +5472,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "scientists",
+          "label": "Scientists",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Protein Design Model",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "tpu",
+          "label": "TPU Accelerators",
+          "kind": "server",
+          "tech": "Cloud TPU",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "lab",
+          "label": "Lab Synthesis & Testing",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "scientists",
+          "to": "vertex",
+          "label": "desired properties"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "vertex",
+          "to": "tpu",
+          "label": "runs on"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "vertex",
+          "to": "lab",
+          "label": "novel protein sequences"
         }
       ]
     }
@@ -5112,51 +5566,80 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
           "id": "gcp",
           "label": "Google Cloud",
           "kind": "region"
+        },
+        {
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "lab",
+          "label": "Lab",
+          "kind": "external"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "inbox",
+          "label": "Lab Result Email",
+          "kind": "email",
+          "tech": "Gmail",
+          "group": "ws"
+        },
+        {
+          "id": "gemini",
+          "label": "Gemini in Gmail",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini for Google Workspace",
           "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
-          "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "PDF Parsing",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "doc",
+          "label": "Report Template",
+          "kind": "client",
+          "tech": "Google Docs",
+          "group": "ws"
+        },
+        {
+          "id": "employee",
+          "label": "Employee",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "vertex_ai"
+          "from": "lab",
+          "to": "inbox",
+          "label": "PDF lab result"
         },
         {
-          "from": "vertex_ai",
-          "to": "workspace"
+          "from": "employee",
+          "to": "gemini",
+          "label": "extract & format prompt"
         },
         {
-          "from": "workspace",
-          "to": "docai"
+          "from": "inbox",
+          "to": "gemini",
+          "label": "attachment"
+        },
+        {
+          "from": "gemini",
+          "to": "docai",
+          "label": "parse PDF"
+        },
+        {
+          "from": "gemini",
+          "to": "doc",
+          "label": "populated table"
         }
       ]
     }
@@ -5165,8 +5648,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-47",
     "title": "#47 \u00b7 Build an AI-enhanced underwriting model for insurers",
     "category": "Blueprint #47 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -5177,9 +5660,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a commercial insurer, and quoting policies for complex risks requires underwriters to manually assess vast amounts of data, a process that can take days. Your challenge is to automate and accelerate this process to provide faster quotes and gain a competitive edge. (Tech stack: BigQuery, Vertex AI, Cloud Run)",
     "dataflow": [
-      "Historical data on leads, quotes, and claims outcomes is stored and processed in BigQuery ",
+      "Historical data on leads, quotes, and claims outcomes is stored and processed in BigQuery",
       "This data is used to train a Vertex AI machine learning model to predict the risk associated with a new lead",
-      "When a new request for a quote arrives, the data is sent to a service on Cloud Run ",
+      "When a new request for a quote arrives, the data is sent to a service on Cloud Run",
       "The service calls the deployed Vertex AI model, which returns a risk score and a suggested premium in seconds",
       "This automates the initial assessment, allowing a human underwriter to review the AI-generated quote and make a final decision in minutes instead of days"
     ],
@@ -5215,47 +5698,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Leads, Quotes & Claims",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Risk Model",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "requests",
+          "label": "Quote Requests",
+          "kind": "external"
+        },
+        {
+          "id": "run",
+          "label": "Quote Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "underwriter",
+          "label": "Underwriter",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "bq",
+          "to": "vertex",
+          "label": "training data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "requests",
+          "to": "run",
+          "label": "new lead"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "run",
+          "to": "vertex",
+          "label": "predict risk"
+        },
+        {
+          "from": "run",
+          "to": "underwriter",
+          "label": "risk score & premium"
         }
       ]
     }
@@ -5276,8 +5772,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large research hospital or institution with petabytes of valuable clinical data. Your challenge is that this data is often siloed and difficult for researchers to access and analyze, creating a major roadblock to scientific discovery. (Tech stack: Vertex AI Search, BigQuery, Google Cloud Healthcare API)",
     "dataflow": [
-      "Petabytes of clinical data are de-identified using the Healthcare API and consolidated into BigQuery ",
-      "The entire dataset, including unstructured notes and structured data, is indexed into Vertex AI Search ",
+      "Petabytes of clinical data are de-identified using the Healthcare API and consolidated into BigQuery",
+      "The entire dataset, including unstructured notes and structured data, is indexed into Vertex AI Search",
       "A researcher can now use a simple, natural language search bar to ask complex questions like, \"Find all patient cohorts over the age of 50 with a history of heart disease who responded positively to drug X.\"",
       "Vertex AI Search retrieves the relevant, anonymized records from across the entire 50-petabyte dataset, accelerating research from months to minutes"
     ],
@@ -5315,59 +5811,61 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "clinical",
+          "label": "Clinical Systems",
+          "kind": "external"
         },
         {
-          "id": "healthcare_ai",
-          "label": "Clinical Data & MedLM",
-          "kind": "ai",
+          "id": "hapi",
+          "label": "De-identification",
+          "kind": "api",
           "tech": "Cloud Healthcare API",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Clinical Data Warehouse",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Cohort Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "researcher",
+          "label": "Researcher",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "healthcare_ai"
+          "from": "clinical",
+          "to": "hapi",
+          "label": "clinical data"
         },
         {
-          "from": "healthcare_ai",
-          "to": "bigquery"
+          "from": "hapi",
+          "to": "bq",
+          "label": "de-identified records"
         },
         {
-          "from": "bigquery",
-          "to": "vai_search"
+          "from": "bq",
+          "to": "search",
+          "label": "index notes & data",
+          "style": "dashed"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "researcher",
+          "to": "search",
+          "label": "natural-language question"
         }
       ]
     }
@@ -5388,9 +5886,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a pharmaceutical company or public health organization. Your challenge is to move from reacting to seasonal outbreaks like the flu to proactively predicting them, allowing for better resource planning, vaccine distribution, and public health messaging. (Tech stack: BigQuery, Vertex AI, Google Trends API)",
     "dataflow": [
-      "Anonymized, aggregated Google Search trend data (via the Trends API ) for terms like \"fever\" and \"cough\" is combined with internal historical sales data for flu medication in BigQuery ",
+      "Anonymized, aggregated Google Search trend data (via the Trends API ) for terms like \"fever\" and \"cough\" is combined with internal historical sales data for flu medication in BigQuery",
       "A Gemini model is used to analyze these combined datasets to identify correlations and predict future outbreaks on a location-specific basis",
-      "The system generates a forecast, such as \"A 20% increase in search traffic for 'flu symptoms' in Ohio predicts a spike in cases in 7-10 days.\" , which is then visualized on a dashboard for real-time healthcare planning"
+      "The system generates a forecast, such as \"A 20% increase in search traffic for 'flu symptoms' in Ohio predicts a spike in cases in 7-10 days.\", which is then visualized on a dashboard for real-time healthcare planning"
     ],
     "keywords": [
       "49",
@@ -5427,47 +5925,58 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "trends",
+          "label": "Search Trends",
+          "kind": "api",
+          "tech": "Google Trends API"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "sales",
+          "label": "Internal Sales History",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Combined Datasets",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Outbreak Prediction",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "dash",
+          "label": "Planning Dashboard",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "trends",
+          "to": "bq",
+          "label": "symptom searches"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "sales",
+          "to": "bq",
+          "label": "medication sales"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "gemini",
+          "label": "combined data"
+        },
+        {
+          "from": "gemini",
+          "to": "dash",
+          "label": "location forecasts"
         }
       ]
     }
@@ -5476,8 +5985,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-50",
     "title": "#50 \u00b7 Enhance IVF outcomes with AI-powered embryo analysis",
     "category": "Blueprint #50 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -5488,7 +5997,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a fertility clinic, and one of the most critical and difficult parts of the IVF process is selecting the embryo with the highest chance of a successful pregnancy. Your challenge is improving the accuracy of this selection process to give patients the best possible outcomes. (Tech stack: Vertex AI, Google Cloud Storage)",
     "dataflow": [
-      "High-resolution images of embryos are uploaded to Google Cloud Storage ",
+      "High-resolution images of embryos are uploaded to Google Cloud Storage",
       "A Vertex AI Vision model analyzes the images, extracting hundreds of morphological features that are imperceptible to the human eye",
       "This feature data, along with the eventual outcome data (successful implantation or not), is used to train an AutoML model",
       "When analyzing a new patient's embryos, the model provides a viability score for each one, helping embryologists make a more data-driven decision and increasing the likelihood of a successful IVF cycle"
@@ -5526,13 +6035,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "embryologists",
+          "label": "Embryologists",
           "kind": "user"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Embryo Images",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
@@ -5540,33 +6049,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Morphology Features",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "automl",
+          "label": "Viability Model",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Vertex AI AutoML",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "outcomes",
+          "label": "Implantation Outcomes",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "embryologists",
+          "to": "gcs",
+          "label": "high-resolution images"
         },
         {
           "from": "gcs",
-          "to": "vision"
+          "to": "vision",
+          "label": "images"
         },
         {
           "from": "vision",
-          "to": "vertex_ai"
+          "to": "automl",
+          "label": "features \u2192 viability score"
+        },
+        {
+          "from": "outcomes",
+          "to": "automl",
+          "label": "training labels",
+          "style": "dashed"
         }
       ]
     }
@@ -5575,8 +6098,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-51",
     "title": "#51 \u00b7 Automate routing and medical order processing for home health",
     "category": "Blueprint #51 \u00b7 Healthcare & Life Sciences",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Healthcare & Life Sciences"
     ],
@@ -5588,9 +6111,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a home health company managing a fleet of nurses who conduct thousands of patient visits. Your challenge is optimizing their daily routes to be as efficient as possible while also speeding up the manual, paper-based process of handling medical orders. (Tech stack: Google Maps Platform (Routes API), Document AI, Cloud Run)",
     "dataflow": [
       "A patient's medical order (PDF or image) is uploaded to the system",
-      "A service on Cloud Run sends the file to Document AI , which automatically extracts the patient details, required services, and location",
-      "Each day, the system sends the list of all required visits to the Google Maps Routes API , which calculates the most efficient multi-stop route for each nurse",
-      "The optimized route is sent to the nurse's mobile app, saving time and fuel, while the automated order processing reduces administrative overhead. These architectural blueprints are inspired by customers who are using AI in the telecommunication industry, such as: Bell Canada, Verizon, Vodafone, Nokia, Orange, and more "
+      "A service on Cloud Run sends the file to Document AI, which automatically extracts the patient details, required services, and location",
+      "Each day, the system sends the list of all required visits to the Google Maps Routes API, which calculates the most efficient multi-stop route for each nurse",
+      "The optimized route is sent to the nurse's mobile app, saving time and fuel, while the automated order processing reduces administrative overhead"
     ],
     "keywords": [
       "51",
@@ -5628,13 +6151,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "orders",
+          "label": "Medical Orders",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Order Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -5642,7 +6165,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Order Extraction",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
@@ -5650,37 +6173,38 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
-          "tech": "Google Maps Platform",
+          "label": "Route Optimization",
+          "kind": "api",
+          "tech": "Google Maps Platform (Routes API)",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "nurse",
+          "label": "Nurse App",
+          "kind": "mobile"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "orders",
+          "to": "run",
+          "label": "PDF or image"
         },
         {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "run",
+          "to": "docai",
+          "label": "patient, services, location"
         },
         {
-          "from": "docai",
-          "to": "maps"
+          "from": "run",
+          "to": "maps",
+          "label": "daily visit list"
         },
         {
-          "from": "maps",
-          "to": "mobile"
+          "from": "run",
+          "to": "nurse",
+          "label": "optimized route"
         }
       ]
     }
@@ -5701,7 +6225,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a telecommunications provider serving business customers who need to modernize their own customer service. Your challenge is providing a flexible, AI-powered contact center solution that can both handle calls automatically and assist human agents in real-time. (Tech stack: Contact Center AI Platform (CCAI), Vertex AI, a CRM system)",
     "dataflow": [
-      "When a customer calls, they are first greeted by an AI-powered agent built on Contact Center AI ",
+      "When a customer calls, they are first greeted by an AI-powered agent built on Contact Center AI",
       "The agent handles common requests, such as checking an account balance",
       "If the caller needs to speak to a human, the call is transferred",
       "As the human agent speaks, the \"Agent Assist\" feature listens to the conversation, transcribes it in real-time, and uses Gemini to provide the agent with relevant knowledge base articles and next-step suggestions directly in their CRM interface"
@@ -5738,59 +6262,71 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "caller",
+          "label": "Caller",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
           "id": "ccai",
-          "label": "Contact Center",
+          "label": "Virtual Agent",
           "kind": "ai",
           "tech": "Contact Center AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "human",
+          "label": "Human Agent",
+          "kind": "user"
+        },
+        {
+          "id": "assist",
+          "label": "Agent Assist",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Agent Assist",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Knowledge & Next Steps",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "crm",
+          "label": "CRM",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
-        },
-        {
-          "from": "cloud_run",
-          "to": "ccai"
+          "from": "caller",
+          "to": "ccai",
+          "label": "call"
         },
         {
           "from": "ccai",
-          "to": "vertex_ai"
+          "to": "human",
+          "label": "transfer"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "human",
+          "to": "assist",
+          "label": "live conversation",
+          "style": "dashed"
+        },
+        {
+          "from": "assist",
+          "to": "gemini",
+          "label": "real-time transcript"
+        },
+        {
+          "from": "assist",
+          "to": "crm",
+          "label": "articles & next steps"
         }
       ]
     }
@@ -5811,8 +6347,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large telecommunications company, and you want to empower your entire workforce with AI. Your challenge is providing easy access to generative AI tools while maintaining strict security, privacy, and compliance controls over your sensitive company data. (Tech stack: Vertex AI, Identity and Access Management (IAM), Google Cloud Storage)",
     "dataflow": [
-      "An internal \"AI Sandbox\" platform is built using Vertex AI Agent Builder ",
-      "The platform is grounded on a curated set of internal company documents (legal, HR, technical docs) stored securely in Google Cloud Storage ",
+      "An internal \"AI Sandbox\" platform is built using Vertex AI Agent Builder",
+      "The platform is grounded on a curated set of internal company documents (legal, HR, technical docs) stored securely in Google Cloud Storage",
       "Employees access the sandbox through their corporate identity, with IAM rules ensuring they can only access data they are permissioned to see",
       "An employee can then ask questions like \"Summarize our new data privacy policy\" and receive an answer from Gemini that is based solely on the trusted internal documents, democratizing information securely"
     ],
@@ -5852,21 +6388,21 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "employees",
+          "label": "Employees",
           "kind": "user"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "iam",
+          "label": "Access Control",
+          "kind": "security",
+          "tech": "Identity and Access Management",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
+          "id": "agent",
+          "label": "AI Sandbox",
           "kind": "ai",
           "tech": "Vertex AI Agent Builder",
           "provider": "gcp",
@@ -5874,25 +6410,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Curated Internal Docs",
           "kind": "storage",
           "tech": "Cloud Storage",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Grounded Answers",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "vertex_ai"
+          "from": "employees",
+          "to": "iam",
+          "label": "corporate identity"
         },
         {
-          "from": "vertex_ai",
-          "to": "agent_builder"
+          "from": "iam",
+          "to": "agent",
+          "label": "permitted access"
         },
         {
-          "from": "agent_builder",
-          "to": "gcs"
+          "from": "iam",
+          "to": "gcs",
+          "label": "document permissions",
+          "style": "dashed"
+        },
+        {
+          "from": "agent",
+          "to": "gcs",
+          "label": "grounding documents"
+        },
+        {
+          "from": "agent",
+          "to": "gemini",
+          "label": "grounded prompt"
         }
       ]
     }
@@ -5913,9 +6471,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a telecom operator with a large customer service center. Your challenge is ensuring consistent quality and identifying best practices from thousands of daily calls, a task that requires managers to manually listen to a small, random sample of call recordings. (Tech stack: Speech-to-Text API, Vertex AI, BigQuery, Looker)",
     "dataflow": [
-      "Audio from all customer service calls is transcribed by the Speech-to-Text API , and the text is stored in BigQuery ",
+      "Audio from all customer service calls is transcribed by the Speech-to-Text API, and the text is stored in BigQuery",
       "A scheduled job sends the transcripts to Gemini with a prompt like, \"Summarize this call, classify the customer's reason for calling, and rate the agent's effectiveness based on our quality rubric.\"",
-      "The structured analysis is written back to BigQuery ",
+      "The structured analysis is written back to BigQuery",
       "Managers use a Looker dashboard to see trends, identify top-performing agents, and find calls that can be used as examples for team training"
     ],
     "keywords": [
@@ -5952,59 +6510,84 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "calls",
+          "label": "Customer Calls",
+          "kind": "external"
         },
         {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Call Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Transcripts & QA Scores",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "job",
+          "label": "Scheduled QA Job",
+          "kind": "function",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Summary & QA Scoring",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "looker",
-          "label": "BI & Dashboards",
+          "label": "QA Dashboard",
           "kind": "analytics",
           "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "managers",
+          "label": "Managers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "stt"
+          "from": "calls",
+          "to": "stt",
+          "label": "call audio"
         },
         {
           "from": "stt",
-          "to": "bigquery"
+          "to": "bq",
+          "label": "transcripts"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "job",
+          "to": "bq",
+          "label": "read transcripts, write analysis"
         },
         {
-          "from": "vertex_ai",
-          "to": "looker"
+          "from": "job",
+          "to": "gemini",
+          "label": "summarize & rate"
+        },
+        {
+          "from": "bq",
+          "to": "looker",
+          "label": "trends"
+        },
+        {
+          "from": "managers",
+          "to": "looker",
+          "label": "top agents, training calls"
         }
       ]
     }
@@ -6025,7 +6608,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a global telecommunications operator with thousands of complex interconnection agreements and vendor contracts. Your challenge is quickly finding specific commercial terms, obligations, or renewal dates buried within these dense legal documents. (Tech stack: Document AI, Vertex AI Search, Vertex AI)",
     "dataflow": [
-      "Thousands of contracts are processed by Document AI to extract and structure the raw text, which is then indexed into Vertex AI Search ",
+      "Thousands of contracts are processed by Document AI to extract and structure the raw text, which is then indexed into Vertex AI Search",
       "A member of the legal or commercial team uses a search interface and asks a natural language question like, \"Find all contracts with Operator X that have a termination clause requiring 90 days' notice.\"",
       "Vertex AI Search retrieves the relevant contract sections",
       "For further analysis, Gemini can be used to compare terms across multiple retrieved documents in a side-by-side table"
@@ -6060,47 +6643,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "contracts",
+          "label": "Contract Repository",
+          "kind": "external"
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Contract Parsing",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Contract Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "legal",
+          "label": "Legal & Commercial Team",
+          "kind": "user"
+        },
+        {
+          "id": "gemini",
+          "label": "Term Comparison",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "docai"
+          "from": "contracts",
+          "to": "docai",
+          "label": "thousands of contracts"
         },
         {
           "from": "docai",
-          "to": "vai_search"
+          "to": "search",
+          "label": "structured text, indexed"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "legal",
+          "to": "search",
+          "label": "natural-language question"
+        },
+        {
+          "from": "search",
+          "to": "gemini",
+          "label": "retrieved sections \u2192 side-by-side table"
         }
       ]
     }
@@ -6121,7 +6717,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a 5G network operator, and you want to enable developers to create innovative applications that leverage the unique capabilities of your network (e.g., low latency, high bandwidth). Your challenge is abstracting the complexity of the network into simple, programmable APIs. (Tech stack: Vertex AI, Google Kubernetes Engine (GKE), network APIs)",
     "dataflow": [
-      "A \"Network as Code\" platform exposes complex network functions via simple APIs, hosted on GKE ",
+      "A \"Network as Code\" platform exposes complex network functions via simple APIs, hosted on GKE",
       "A developer wants to build a telehealth app that requires a guaranteed high-quality connection for a remote surgery consultation",
       "They use the platform's SDK and interact with a Gemini -powered assistant, prompting, \"Generate the Python code to request a dedicated, low-latency network slice between the hospital and the patient's home for the next 60 minutes.\"",
       "Gemini generates the necessary code, which calls the platform's APIs to provision the network resources dynamically"
@@ -6160,59 +6756,57 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "developer",
+          "label": "Developer",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
+          "id": "sdk",
+          "label": "Platform SDK",
+          "kind": "client"
+        },
+        {
+          "id": "gemini",
+          "label": "Code Assistant",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "Network-as-Code APIs",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "network",
+          "label": "Network Functions",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "developer",
+          "to": "sdk",
+          "label": "prompt"
         },
         {
-          "from": "cloud_run",
-          "to": "gke"
+          "from": "sdk",
+          "to": "gemini",
+          "label": "generate Python code"
+        },
+        {
+          "from": "sdk",
+          "to": "gke",
+          "label": "API calls"
         },
         {
           "from": "gke",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "to": "network",
+          "label": "provision network slice"
         }
       ]
     }
@@ -6221,8 +6815,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-57",
     "title": "#57 \u00b7 Create a unified customer view for enhanced service",
     "category": "Blueprint #57 \u00b7 Telecommunications, Tech & SecOps",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Telecommunications, Tech & SecOps"
     ],
@@ -6233,7 +6827,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large telecom provider, and your customer data is fragmented across multiple systems (billing, CRM, network usage). Your challenge is creating a single, 360-degree view of each customer to provide proactive, personalized service and make informed business decisions. (Tech stack: BigQuery, Dataflow, Vertex AI, Looker)",
     "dataflow": [
-      "Data from all source systems is streamed via Dataflow into BigQuery , which acts as the central data warehouse",
+      "Data from all source systems is streamed via Dataflow into BigQuery, which acts as the central data warehouse",
       "Vertex AI models analyze the unified data to identify patterns, such as a customer experiencing poor network quality in a specific location",
       "The system can then create an actionable insight, like \"This customer is at high risk of churn due to repeated dropped calls.\"",
       "This insight is surfaced to a customer service agent via a Looker dashboard, prompting them to proactively reach out with a solution, like offering a network extender"
@@ -6271,29 +6865,29 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sources",
+          "label": "Source Systems",
+          "kind": "external"
         },
         {
-          "id": "dataflow",
-          "label": "Stream Processing",
+          "id": "df",
+          "label": "Streaming Ingest",
           "kind": "analytics",
           "tech": "Dataflow",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Customer Data Warehouse",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Churn & Network Models",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
@@ -6301,29 +6895,43 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "looker",
-          "label": "BI & Dashboards",
+          "label": "Agent Dashboard",
           "kind": "analytics",
           "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "agent",
+          "label": "Service Agent",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "dataflow"
+          "from": "sources",
+          "to": "df",
+          "label": "all customer data"
         },
         {
-          "from": "dataflow",
-          "to": "bigquery"
+          "from": "df",
+          "to": "bq",
+          "label": "unified data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "patterns"
         },
         {
-          "from": "vertex_ai",
-          "to": "looker"
+          "from": "vertex",
+          "to": "looker",
+          "label": "churn-risk insights"
+        },
+        {
+          "from": "agent",
+          "to": "looker",
+          "label": "proactive outreach"
         }
       ]
     }
@@ -6344,11 +6952,11 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're an Internet of Things (IoT) provider for commercial clients, collecting millions of data points from sensors and devices. Your challenge is that non-technical users, like fleet managers or building operators, cannot easily access or understand this complex data to get the insights they need. (Tech stack: BigQuery, Vertex AI, Looker (or another BI tool))",
     "dataflow": [
-      "All IoT data is streamed and stored in BigQuery ",
+      "All IoT data is streamed and stored in BigQuery",
       "The data is exposed through a BI tool like Looker with an embedded natural language chat interface",
       "A non-technical user asks a question in plain English, such as \"Which of our vehicles have been idling for more than 30 minutes today in the downtown area?\"",
-      "The request is sent to Gemini , which understands the user's intent and translates the question into a SQL query",
-      "The query is run against BigQuery , and the results are returned as a simple table or map directly in the chat interface, reducing time-to-insight by 88%"
+      "The request is sent to Gemini, which understands the user's intent and translates the question into a SQL query",
+      "The query is run against BigQuery, and the results are returned as a simple table or map directly in the chat interface, reducing time-to-insight by 88%"
     ],
     "keywords": [
       "58",
@@ -6385,13 +6993,13 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "iot",
+          "label": "IoT Devices",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "IoT Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
@@ -6399,33 +7007,46 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "looker",
-          "label": "BI & Dashboards",
+          "label": "BI Chat",
           "kind": "analytics",
           "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "NL to SQL",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "user",
+          "label": "Business User",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "iot",
+          "to": "bq",
+          "label": "streamed data"
         },
         {
-          "from": "bigquery",
-          "to": "looker"
+          "from": "user",
+          "to": "looker",
+          "label": "plain-English question"
         },
         {
           "from": "looker",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "intent \u2192 SQL"
+        },
+        {
+          "from": "looker",
+          "to": "bq",
+          "label": "run query \u2192 table or map"
         }
       ]
     }
@@ -6434,8 +7055,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-59",
     "title": "#59 \u00b7 Deliver AI services on a distributed cloud for data sovereignty",
     "category": "Blueprint #59 \u00b7 Telecommunications, Tech & SecOps",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Telecommunications, Tech & SecOps"
     ],
@@ -6478,66 +7099,67 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Telecommunications, Tech & SecOps (Google Distributed Cloud, Vertex AI, Speech-to-Text, Text-to-Speech)",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "gdc",
+          "label": "Google Distributed Cloud (in-country data center)",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "caller",
+          "label": "Caller",
           "kind": "user"
         },
         {
-          "id": "gdce",
-          "label": "Distributed Cloud",
-          "kind": "container",
-          "tech": "Distributed Cloud",
+          "id": "stt",
+          "label": "Speech Recognition",
+          "kind": "ai",
+          "tech": "Speech-to-Text on Google Distributed Cloud",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "gdc"
         },
         {
-          "id": "stt",
-          "label": "Speech to Text",
+          "id": "vertex",
+          "label": "Translation Model",
           "kind": "ai",
-          "tech": "Speech-to-Text",
+          "tech": "Vertex AI on Google Distributed Cloud",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "gdc"
         },
         {
           "id": "tts",
-          "label": "Text to Speech",
+          "label": "Speech Synthesis",
           "kind": "ai",
-          "tech": "Text-to-Speech",
+          "tech": "Text-to-Speech on Google Distributed Cloud",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "gdc"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "listener",
+          "label": "Other Party",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gdce"
-        },
-        {
-          "from": "gdce",
-          "to": "stt"
+          "from": "caller",
+          "to": "stt",
+          "label": "audio stream"
         },
         {
           "from": "stt",
-          "to": "tts"
+          "to": "vertex",
+          "label": "text"
+        },
+        {
+          "from": "vertex",
+          "to": "tts",
+          "label": "translated text"
         },
         {
           "from": "tts",
-          "to": "vertex_ai"
+          "to": "listener",
+          "label": "translated audio"
         }
       ]
     }
@@ -6595,59 +7217,53 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "sources",
+          "label": "Org Logs & Telemetry",
+          "kind": "external"
         },
         {
           "id": "secops",
-          "label": "Security Operations",
+          "label": "Threat Detection",
           "kind": "security",
           "tech": "Google Security Operations",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Threat Summary & Playbook",
+          "kind": "ai",
+          "tech": "Gemini in Security",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "analyst",
+          "label": "Security Analyst",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
-        },
-        {
-          "from": "cloud_run",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "secops"
+          "from": "sources",
+          "to": "secops",
+          "label": "logs & telemetry"
         },
         {
           "from": "secops",
-          "to": "bigquery"
+          "to": "analyst",
+          "label": "high-priority alert"
+        },
+        {
+          "from": "secops",
+          "to": "gemini",
+          "label": "case context",
+          "style": "dashed"
+        },
+        {
+          "from": "analyst",
+          "to": "gemini",
+          "label": "summarize threat, remediation?"
         }
       ]
     }
@@ -6668,11 +7284,11 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large enterprise with thousands of internal developers and data scientists building AI models. Your challenge is establishing a robust governance layer to ensure that all AI development is secure, compliant, and data-driven without stifling innovation. (Tech stack: Vertex AI, BigQuery, open-source tools (e.g., for model scanning), IAM)",
     "dataflow": [
-      "All AI model development is done within Vertex AI ",
-      "As models are built, their metadata, training data sources, and dependencies are automatically logged in BigQuery ",
+      "All AI model development is done within Vertex AI",
+      "As models are built, their metadata, training data sources, and dependencies are automatically logged in BigQuery",
       "Automated security tools scan models for vulnerabilities",
       "A governance dashboard provides a single view of all AI projects, showing compliance status and data lineage",
-      "IAM policies enforce rules, such as \"a model cannot be deployed to production if it was trained on unapproved customer data,\" creating a robust, data-driven governance framework. These architectural blueprints are inspired by customers who are using AI in the hospitality and travel industry, such as: Alaska Airlines, Gymshark, Priceline, Six Flags, Studiosus Reisen, trivago, and more "
+      "IAM policies enforce rules, such as \"a model cannot be deployed to production if it was trained on unapproved customer data,\" creating a robust, data-driven governance framework"
     ],
     "keywords": [
       "61",
@@ -6710,47 +7326,77 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "scientists",
+          "label": "Data Scientists",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Model Development",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "scanners",
+          "label": "Model Scanners (open source)",
+          "kind": "external"
+        },
+        {
+          "id": "bq",
+          "label": "Metadata & Lineage",
           "kind": "analytics",
           "tech": "BigQuery",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "dash",
+          "label": "Governance Dashboard",
+          "kind": "client"
+        },
+        {
+          "id": "iam",
+          "label": "Deployment Policies",
+          "kind": "security",
+          "tech": "Identity and Access Management",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "scientists",
+          "to": "vertex",
+          "label": "build models"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "vertex",
+          "to": "bq",
+          "label": "metadata, data sources, dependencies",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "vertex",
+          "to": "scanners",
+          "label": "models"
+        },
+        {
+          "from": "scanners",
+          "to": "bq",
+          "label": "vulnerability findings"
+        },
+        {
+          "from": "bq",
+          "to": "dash",
+          "label": "compliance & lineage"
+        },
+        {
+          "from": "iam",
+          "to": "vertex",
+          "label": "production deploy rules",
+          "style": "dashed"
         }
       ]
     }
@@ -6772,7 +7418,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're an airline or online travel agency. Your challenge is that traditional booking websites with complex filters and forms can be frustrating and impersonal for travelers who just want to ask a simple question, leading to abandoned searches and lost bookings. (Tech stack: Vertex AI, Cloud Run, backend booking system APIs)",
     "dataflow": [
       "A traveler interacts with a chatbot on the website or app, asking, \"I want to fly from Seattle to Miami next month for about $400.\"",
-      "The request is sent to a service on Cloud Run , which uses Vertex AI Agent Builder to understand the user's intent and extract entities (origin, destination, date, price)",
+      "The request is sent to a service on Cloud Run, which uses Vertex AI Agent Builder to understand the user's intent and extract entities (origin, destination, date, price)",
       "The service calls the airline's booking APIs to find matching flights",
       "The flight options are passed to Gemini with a prompt like, \"Here are three flights. Present them in a friendly, conversational way and ask the user which one they prefer.\"",
       "The chatbot presents the options, streamlining the booking process into a simple conversation"
@@ -6809,47 +7455,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "traveler",
+          "label": "Traveler",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "chat",
+          "label": "Website / App Chat",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Travel Agent Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "agent",
+          "label": "Intent & Entities",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Vertex AI Agent Builder",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
+          "id": "booking",
+          "label": "Airline Booking APIs",
+          "kind": "external"
+        },
+        {
+          "id": "gemini",
+          "label": "Conversational Options",
           "kind": "ai",
-          "tech": "Vertex AI Agent Builder",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "traveler",
+          "to": "chat",
+          "label": "trip request"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "chat",
+          "to": "run",
+          "label": "message"
         },
         {
-          "from": "vertex_ai",
-          "to": "agent_builder"
+          "from": "run",
+          "to": "agent",
+          "label": "origin, destination, date, price"
+        },
+        {
+          "from": "run",
+          "to": "booking",
+          "label": "flight search"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "flights \u2192 friendly options"
         }
       ]
     }
@@ -6870,9 +7539,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a theme park or large entertainment venue operator. Your challenge is that guests can feel overwhelmed trying to navigate the park, find showtimes, and check ride wait times, which can detract from their overall experience. (Tech stack: Google Maps Platform, Vertex AI, BigQuery, Cloud Run)",
     "dataflow": [
-      "Real-time park data (ride wait times, show schedules, character locations) is streamed into BigQuery ",
+      "Real-time park data (ride wait times, show schedules, character locations) is streamed into BigQuery",
       "A guest opens the park's mobile app and asks the digital assistant, \"What's a fun ride with a wait time under 20 minutes near me?\"",
-      "The app sends the request and the user's location to a service on Cloud Run ",
+      "The app sends the request and the user's location to a service on Cloud Run",
       "The service queries BigQuery for current wait times and uses the Google Maps Platform to find nearby attractions",
       "Gemini synthesizes this information to provide a personalized recommendation, such as, \"The Goliath roller coaster is a 5-minute walk from you and has a 15-minute wait!\""
     ],
@@ -6912,29 +7581,31 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "park",
+          "label": "Park Systems",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Wait Times & Schedules",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "guest",
+          "label": "Guest",
+          "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "app",
+          "label": "Park App",
+          "kind": "mobile"
+        },
+        {
+          "id": "run",
+          "label": "Assistant Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -6942,41 +7613,51 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
+          "label": "Nearby Attractions",
+          "kind": "api",
           "tech": "Google Maps Platform",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Recommendation",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "park",
+          "to": "bq",
+          "label": "real-time park data"
         },
         {
-          "from": "bigquery",
-          "to": "mobile"
+          "from": "guest",
+          "to": "app",
+          "label": "question"
         },
         {
-          "from": "mobile",
-          "to": "cloud_run"
+          "from": "app",
+          "to": "run",
+          "label": "request & location"
         },
         {
-          "from": "cloud_run",
-          "to": "maps"
+          "from": "run",
+          "to": "bq",
+          "label": "current wait times"
         },
         {
-          "from": "maps",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "maps",
+          "label": "nearby attractions"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "personalized recommendation"
         }
       ]
     }
@@ -6985,8 +7666,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-64",
     "title": "#64 \u00b7 Build predictive tools for food orders and loyalty",
     "category": "Blueprint #64 \u00b7 Hospitality, Travel & Media",
-    "agentCategory": "data",
-    "icon": "query_stats",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Hospitality, Travel & Media"
     ],
@@ -6997,7 +7678,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a quick-service restaurant or pizza chain. Your challenge is managing inventory and kitchen prep time effectively during peak hours while also encouraging repeat business through generic loyalty programs that often fail to engage customers. (Tech stack: BigQuery, Vertex AI, Cloud Run)",
     "dataflow": [
-      "All historical order data is stored in BigQuery ",
+      "All historical order data is stored in BigQuery",
       "Vertex AI forecasting models analyze this data to predict order volumes for specific times and locations (e.g., \"Predict a 30% spike in pepperoni pizza orders in downtown locations on Friday night\" )",
       "When a loyalty member opens the app, a service on Cloud Run retrieves their order history and sends it to Gemini with a prompt like, \"This user frequently orders on Tuesdays. Create a personalized offer for a free side item with their next Tuesday order.\"",
       "This predictive prep and personalized marketing increases efficiency and customer loyalty"
@@ -7036,47 +7717,93 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "orders",
+          "label": "Order Systems",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Order History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "forecast",
+          "label": "Order Volume Forecast",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "kitchens",
+          "label": "Store Prep Plans",
+          "kind": "external"
+        },
+        {
+          "id": "member",
+          "label": "Loyalty Member",
+          "kind": "user"
+        },
+        {
+          "id": "app",
+          "label": "Ordering App",
+          "kind": "mobile"
+        },
+        {
+          "id": "run",
+          "label": "Offer Service",
           "kind": "service",
           "tech": "Cloud Run",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Personalized Offers",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "orders",
+          "to": "bq",
+          "label": "all orders"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "forecast",
+          "label": "history"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "forecast",
+          "to": "kitchens",
+          "label": "predicted volumes"
+        },
+        {
+          "from": "member",
+          "to": "app",
+          "label": "opens app"
+        },
+        {
+          "from": "app",
+          "to": "run",
+          "label": "member ID"
+        },
+        {
+          "from": "run",
+          "to": "bq",
+          "label": "order history"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "offer prompt"
         }
       ]
     }
@@ -7085,8 +7812,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-65",
     "title": "#65 \u00b7 Enable natural language search for accommodations",
     "category": "Blueprint #65 \u00b7 Hospitality, Travel & Media",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Hospitality, Travel & Media"
     ],
@@ -7097,7 +7824,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a hotel booking platform or vacation rental site. Your challenge is that users often have specific, nuanced needs (like \"a quiet hotel near the beach with a pool for kids\") that are difficult to express using standard check-box filters. (Tech stack: Vertex AI Search, BigQuery)",
     "dataflow": [
-      "Detailed data for millions of hotel listings, including amenities, reviews, and location info, is indexed from BigQuery into Vertex AI Search ",
+      "Detailed data for millions of hotel listings, including amenities, reviews, and location info, is indexed from BigQuery into Vertex AI Search",
       "A user types a free-text query like, \"Find me a pet-friendly hotel in downtown Austin with a rooftop bar for under $300 a night.\"",
       "Vertex AI Search processes the natural language to understand the multiple intents (pet-friendly, location, amenity, price)",
       "The engine returns a ranked list of hotels that best match all the specified criteria, creating a more intuitive and personalized search experience"
@@ -7132,47 +7859,48 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Hotel Listings",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Accommodation Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "traveler",
+          "label": "Traveler",
+          "kind": "user"
+        },
+        {
+          "id": "site",
+          "label": "Travel Site",
+          "kind": "client"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "bq",
+          "to": "search",
+          "label": "indexed listings",
+          "style": "dashed"
         },
         {
-          "from": "bigquery",
-          "to": "vai_search"
+          "from": "traveler",
+          "to": "site",
+          "label": "free-text query"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "site",
+          "to": "search",
+          "label": "query \u2192 ranked hotels"
         }
       ]
     }
@@ -7181,8 +7909,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-66",
     "title": "#66 \u00b7 Create an AI-driven virtual fitness coach",
     "category": "Blueprint #66 \u00b7 Hospitality, Travel & Media",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Hospitality, Travel & Media"
     ],
@@ -7231,59 +7959,63 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "user",
+          "label": "User",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "phone",
+          "label": "Phone Camera & App",
+          "kind": "mobile"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "wearable",
+          "label": "Wearable Device",
+          "kind": "external"
+        },
+        {
+          "id": "vision",
+          "label": "Form & Fitness Analysis",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Program Generator",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "user",
+          "to": "phone",
+          "label": "goals & exercise video"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "phone",
+          "to": "vision",
+          "label": "video"
         },
         {
-          "from": "vertex_ai",
-          "to": "mobile"
+          "from": "vision",
+          "to": "gemini",
+          "label": "assessment"
         },
         {
-          "from": "mobile",
-          "to": "bigquery"
+          "from": "wearable",
+          "to": "gemini",
+          "label": "activity data"
+        },
+        {
+          "from": "gemini",
+          "to": "phone",
+          "label": "daily workout program",
+          "style": "dashed"
         }
       ]
     }
@@ -7304,7 +8036,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a global hotel group, and you need to run advertising campaigns across many different regions and customer segments. Your challenge is creating ad copy and imagery that resonates with each specific audience, a task that is slow and difficult to scale manually. (Tech stack: BigQuery, Vertex AI, Google Ads API)",
     "dataflow": [
-      "Customer and campaign performance data is consolidated in BigQuery ",
+      "Customer and campaign performance data is consolidated in BigQuery",
       "The marketing team defines a new campaign with a target audience, such as \"families looking for a summer vacation in Spain.\"",
       "A service sends this context to Gemini with a prompt like, \"Generate 5 different ad headlines and descriptions for a family-friendly hotel in Barcelona, highlighting the pool and proximity to attractions.\"",
       "Gemini creates multiple ad variations, which are then automatically pushed to the Google Ads API to create a highly targeted and personalized campaign, boosting ad team productivity and revenue"
@@ -7340,47 +8072,59 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "team",
+          "label": "Marketing Team",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Customer & Campaign Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "svc",
+          "label": "Campaign Service",
+          "kind": "service",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Ad Copy Generator",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "ads",
+          "label": "Google Ads",
+          "kind": "api",
+          "tech": "Google Ads API"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "team",
+          "to": "svc",
+          "label": "campaign brief"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "bq",
+          "to": "svc",
+          "label": "performance data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "svc",
+          "to": "gemini",
+          "label": "ad prompt"
+        },
+        {
+          "from": "svc",
+          "to": "ads",
+          "label": "ad variations"
         }
       ]
     }
@@ -7389,8 +8133,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-68",
     "title": "#68 \u00b7 Automate data governance for airline operations",
     "category": "Blueprint #68 \u00b7 Hospitality, Travel & Media",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Hospitality, Travel & Media"
     ],
@@ -7401,7 +8145,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a major airline dealing with petabytes of data from dozens of systems, from flight operations to customer loyalty. Your challenge is managing and governing this data, as manually classifying tables and managing metadata is a massive, costly, and error-prone undertaking. (Tech stack: BigQuery, Gemini, Dataplex)",
     "dataflow": [
-      "As new data tables are created in BigQuery , a process is triggered",
+      "As new data tables are created in BigQuery, a process is triggered",
       "The table schema and sample data are sent to a Gemini model with a prompt like, \"Analyze this table and generate a business-friendly description, assign data quality rules, and classify any columns that contain PII.\"",
       "The model returns structured metadata",
       "This metadata is used to automatically populate the Dataplex data catalog, ensuring all data is properly documented, classified, and governed without significant manual effort"
@@ -7437,47 +8181,52 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "New BigQuery Tables",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "trigger",
+          "label": "Metadata Trigger",
+          "kind": "function",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Metadata Generation",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "dataplex",
+          "label": "Data Catalog",
+          "kind": "analytics",
+          "tech": "Dataplex",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "bq",
+          "to": "trigger",
+          "label": "table created",
+          "style": "dashed"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "trigger",
+          "to": "gemini",
+          "label": "schema & sample data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "trigger",
+          "to": "dataplex",
+          "label": "descriptions, quality rules, PII tags"
         }
       ]
     }
@@ -7498,7 +8247,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a tour operator responsible for the safety of thousands of travelers around the world. Your challenge is monitoring and filtering a high volume of global security alerts to identify the ones that pose an actual, immediate risk to your specific customers. (Tech stack: Vertex AI, Pub/Sub, a traveler itinerary database)",
     "dataflow": [
-      "A stream of global security alerts from various news and government sources flows into Pub/Sub ",
+      "A stream of global security alerts from various news and government sources flows into Pub/Sub",
       "For each alert, a function is triggered that retrieves the location and topic",
       "The function queries the itinerary database to see if any travelers are currently in the affected area",
       "If there are, the alert text is sent to Gemini with a prompt like, \"Based on this alert about a protest in Paris, classify the risk level for a tourist located 5 miles away as 'Low', 'Medium', or 'High'.\"",
@@ -7538,59 +8287,69 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "feeds",
+          "label": "News & Government Alerts",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Alert Stream",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "fn",
+          "label": "Alert Triage Function",
+          "kind": "function",
+          "group": "gcp"
+        },
+        {
+          "id": "itinerary",
+          "label": "Traveler Itinerary Database",
+          "kind": "database"
+        },
+        {
+          "id": "gemini",
+          "label": "Risk Classification",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "dash",
+          "label": "Security Dashboard",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "feeds",
+          "to": "ps",
+          "label": "global alerts"
         },
         {
-          "from": "cloud_run",
-          "to": "pubsub"
+          "from": "ps",
+          "to": "fn",
+          "label": "each alert",
+          "style": "dashed"
         },
         {
-          "from": "pubsub",
-          "to": "vertex_ai"
+          "from": "fn",
+          "to": "itinerary",
+          "label": "travelers in the area"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "fn",
+          "to": "gemini",
+          "label": "alert text \u2192 Low / Medium / High"
+        },
+        {
+          "from": "fn",
+          "to": "dash",
+          "label": "classified alert"
         }
       ]
     }
@@ -7611,7 +8370,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a property manager for vacation rentals or corporate housing. Your challenge is that new arrivals frequently call with the same set of questions (e.g., \"What's the wifi password?\", \"How does the thermostat work?\"), overwhelming your support staff. (Tech stack: Gemini for Google Workspace, a call logging system)",
     "dataflow": [
-      "All support call logs and transcripts are consolidated into a central Google Sheet ",
+      "All support call logs and transcripts are consolidated into a central Google Sheet",
       "A manager uses the integrated Gemini feature with a prompt like, \"Analyze all the calls from the last 30 days and identify the top 5 most common questions asked by new arrivals.\"",
       "Gemini analyzes the text and returns a summary, revealing that \"Wifi password\" is the most common issue",
       "The business can then take proactive steps, like sending a more prominent welcome email with the wifi details, leading to a reduction in these repetitive calls"
@@ -7644,66 +8403,53 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Hospitality, Travel & Media (Gemini for Google Workspace, a call logging system)",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "logs",
+          "label": "Call Logging System",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
+          "id": "sheet",
+          "label": "Call Log Sheet",
           "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Google Sheets",
+          "group": "ws"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Gemini in Sheets",
+          "kind": "ai",
+          "tech": "Gemini for Google Workspace",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
+        },
+        {
+          "id": "manager",
+          "label": "Guest Services Manager",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "logs",
+          "to": "sheet",
+          "label": "logs & transcripts"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "sheet",
+          "to": "gemini",
+          "label": "call data"
         },
         {
-          "from": "vertex_ai",
-          "to": "workspace"
-        },
-        {
-          "from": "workspace",
-          "to": "bigquery"
+          "from": "manager",
+          "to": "gemini",
+          "label": "top 5 questions?"
         }
       ]
     }
@@ -7726,8 +8472,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "dataflow": [
       "The marketing team identifies a destination to promote, for example, \"Kyoto in autumn.\"",
       "They use Gemini to brainstorm concepts and generate a script, with a prompt like, \"Create a 30-second video script about the serene beauty of Kyoto's temples during autumn.\"",
-      "This script, along with reference images and style guides, is then fed into Veo , Google's generative video model",
-      "Veo generates a high-quality video clip based on the text and image prompts, allowing the team to create new, compelling ad content in a fraction of the time and cost of a traditional film shoot. These architectural blueprints are inspired by customers who are using AI in the manufacturing, industrial and electronics industry, such as: Motorola, AES, Broadcom, COI Energy, Bayer Crop Science, and more "
+      "This script, along with reference images and style guides, is then fed into Veo, Google's generative video model",
+      "Veo generates a high-quality video clip based on the text and image prompts, allowing the team to create new, compelling ad content in a fraction of the time and cost of a traditional film shoot"
     ],
     "keywords": [
       "71",
@@ -7758,59 +8504,47 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "team",
+          "label": "Marketing Team",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Concept & Script",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "imagen",
-          "label": "Creative Media AI",
+          "id": "refs",
+          "label": "Reference Images & Style Guides",
+          "kind": "external"
+        },
+        {
+          "id": "veo",
+          "label": "Video Generation",
           "kind": "ai",
-          "tech": "Imagen on Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "tech": "Veo on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "team",
+          "to": "gemini",
+          "label": "destination concept"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "gemini",
+          "to": "veo",
+          "label": "video script"
         },
         {
-          "from": "vertex_ai",
-          "to": "imagen"
-        },
-        {
-          "from": "imagen",
-          "to": "bigquery"
+          "from": "refs",
+          "to": "veo",
+          "label": "visual references"
         }
       ]
     }
@@ -7819,8 +8553,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-72",
     "title": "#72 \u00b7 Build a better, more responsive AI home companion robot",
     "category": "Blueprint #72 \u00b7 Manufacturing & Agriculture",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Manufacturing & Agriculture"
     ],
@@ -7868,37 +8602,40 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "household",
+          "label": "Household Member",
           "kind": "user"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "robot",
+          "label": "Home Robot (on-device models)",
+          "kind": "mobile"
         },
         {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Speech Recognition",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Conversation & Intent",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
+          "id": "home",
+          "label": "Smart Home Devices",
+          "kind": "api",
+          "tech": "Google Home APIs"
+        },
+        {
           "id": "tts",
-          "label": "Text to Speech",
+          "label": "Spoken Reply",
           "kind": "ai",
           "tech": "Text-to-Speech",
           "provider": "gcp",
@@ -7907,20 +8644,29 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "mobile"
+          "from": "household",
+          "to": "robot",
+          "label": "voice command"
         },
         {
-          "from": "mobile",
-          "to": "stt"
+          "from": "robot",
+          "to": "stt",
+          "label": "captured audio"
         },
         {
           "from": "stt",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "request"
         },
         {
-          "from": "vertex_ai",
-          "to": "tts"
+          "from": "gemini",
+          "to": "home",
+          "label": "device command"
+        },
+        {
+          "from": "gemini",
+          "to": "tts",
+          "label": "reply \u2192 robot speakers"
         }
       ]
     }
@@ -7941,10 +8687,10 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a manufacturer of consumer products with a wide and varied catalog, like gardening supplies. Your challenge is that customers are often novices and don't know which specific product is right for their needs, leading to confusion and lost sales. (Tech stack: Vertex AI, BigQuery, Cloud Run)",
     "dataflow": [
-      "Your entire product catalog, along with expert knowledge and guides, is indexed into Vertex AI Agent Builder from a source like BigQuery ",
+      "Your entire product catalog, along with expert knowledge and guides, is indexed into Vertex AI Agent Builder from a source like BigQuery",
       "A customer interacts with the AI agent on your website, asking, \"My lawn has brown patches and I live in Texas. What should I do?\"",
       "The agent understands the user's intent and location",
-      "The retrieved product information and user query are sent to Gemini to generate a helpful, step-by-step answer, such as \"It sounds like you have a grub problem, common in Texas this time of year. I recommend our product, and here's how to apply it...\" , guiding the customer to the correct purchase"
+      "The retrieved product information and user query are sent to Gemini to generate a helpful, step-by-step answer, such as \"It sounds like you have a grub problem, common in Texas this time of year. I recommend our product, and here's how to apply it...\", guiding the customer to the correct purchase"
     ],
     "keywords": [
       "73",
@@ -7976,59 +8722,74 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "agent_builder",
-          "label": "Agent Orchestrator",
-          "kind": "ai",
-          "tech": "Vertex AI Agent Builder",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Catalog & Expert Guides",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "agent",
+          "label": "Product Agent",
+          "kind": "ai",
+          "tech": "Vertex AI Agent Builder",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "customer",
+          "label": "Customer",
+          "kind": "user"
+        },
+        {
+          "id": "site",
+          "label": "Website Agent",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Agent Service",
           "kind": "service",
           "tech": "Cloud Run",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Step-by-step Answer",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "agent",
+          "label": "indexed catalog",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "agent_builder"
+          "from": "customer",
+          "to": "site",
+          "label": "question"
         },
         {
-          "from": "agent_builder",
-          "to": "bigquery"
+          "from": "site",
+          "to": "run",
+          "label": "query"
         },
         {
-          "from": "bigquery",
-          "to": "cloud_run"
+          "from": "run",
+          "to": "agent",
+          "label": "intent & location \u2192 products"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "products + question"
         }
       ]
     }
@@ -8037,8 +8798,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-74",
     "title": "#74 \u00b7 Automate industrial safety audits with AI",
     "category": "Blueprint #74 \u00b7 Manufacturing & Agriculture",
-    "agentCategory": "security",
-    "icon": "security",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Manufacturing & Agriculture"
     ],
@@ -8049,7 +8810,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a global energy or manufacturing company, and conducting safety audits across dozens of facilities is a slow, manual, and expensive process. Your challenge is to streamline these audits to ensure compliance and safety without incurring massive costs and operational downtime. (Tech stack: Vertex AI, Google Cloud Storage, a mobile application)",
     "dataflow": [
-      "An auditor on-site uses a mobile app to take photos and videos of equipment, which are uploaded to Google Cloud Storage ",
+      "An auditor on-site uses a mobile app to take photos and videos of equipment, which are uploaded to Google Cloud Storage",
       "Vertex AI Vision analyzes the imagery to identify equipment and check for visual compliance (e.g., \"is the safety guard in place?\")",
       "The visual data, along with text from checklists, is fed to a Gemini model that has been trained on the company's safety protocols",
       "The model automatically generates a complete audit report, flagging non-compliant items and citing the specific safety rule, reducing a two-week process to one hour"
@@ -8086,21 +8847,18 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "auditor",
+          "label": "Auditor",
           "kind": "user"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "app",
+          "label": "Audit App",
+          "kind": "mobile"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Photos & Videos",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
@@ -8108,37 +8866,46 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "vision",
-          "label": "Vision & Video AI",
+          "label": "Visual Compliance Check",
           "kind": "ai",
           "tech": "Vertex AI Vision",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Audit Report",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "mobile"
+          "from": "auditor",
+          "to": "app",
+          "label": "site photos & videos"
         },
         {
-          "from": "mobile",
-          "to": "gcs"
+          "from": "app",
+          "to": "gcs",
+          "label": "uploads"
         },
         {
           "from": "gcs",
-          "to": "vision"
+          "to": "vision",
+          "label": "imagery"
         },
         {
           "from": "vision",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "visual findings"
+        },
+        {
+          "from": "app",
+          "to": "gemini",
+          "label": "checklist text"
         }
       ]
     }
@@ -8147,8 +8914,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-75",
     "title": "#75 \u00b7 Automate sales quotes for configurable products",
     "category": "Blueprint #75 \u00b7 Manufacturing & Agriculture",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Manufacturing & Agriculture"
     ],
@@ -8163,7 +8930,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "A service calls the Google Maps Aerial View API to get high-resolution imagery of the property's roof",
       "This imagery is analyzed by a Vertex AI model to measure the roof's dimensions and identify obstructions",
       "The system calculates the optimal number of solar panels and generates a quote",
-      "If the customer uploads a utility bill via Document AI , the system can even calculate potential savings, delivering a complete, accurate quote in 15 minutes instead of two hours"
+      "If the customer uploads a utility bill via Document AI, the system can even calculate potential savings, delivering a complete, accurate quote in 15 minutes instead of two hours"
     ],
     "keywords": [
       "75",
@@ -8200,21 +8967,27 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customer",
+          "label": "Customer",
           "kind": "user"
         },
         {
+          "id": "svc",
+          "label": "Quote Service",
+          "kind": "service",
+          "group": "gcp"
+        },
+        {
           "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
-          "tech": "Google Maps Platform",
+          "label": "Roof Imagery",
+          "kind": "api",
+          "tech": "Google Maps Platform (Aerial View API)",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Roof Measurement",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
@@ -8222,7 +8995,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Utility Bill Parsing",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
@@ -8231,16 +9004,24 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "maps"
+          "from": "customer",
+          "to": "svc",
+          "label": "address & utility bill"
         },
         {
-          "from": "maps",
-          "to": "vertex_ai"
+          "from": "svc",
+          "to": "maps",
+          "label": "property imagery"
         },
         {
-          "from": "vertex_ai",
-          "to": "docai"
+          "from": "svc",
+          "to": "vertex",
+          "label": "roof dimensions & obstructions"
+        },
+        {
+          "from": "svc",
+          "to": "docai",
+          "label": "utility bill \u2192 savings"
         }
       ]
     }
@@ -8261,11 +9042,11 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a large manufacturing enterprise with valuable data locked away in complex databases. Your challenge is that only a small number of technical employees can write SQL queries, creating a bottleneck and preventing business users from getting the insights they need. (Tech stack: BigQuery, Vertex AI, Looker or another BI tool)",
     "dataflow": [
-      "All critical company data (e.g., SAP Materials data) is consolidated into BigQuery ",
-      "An employee uses an internal BI tool and types a natural language question, such as \"What was our total pulp production in Q2 for the southern region, and how does that compare to Q1?\" ",
+      "All critical company data (e.g., SAP Materials data) is consolidated into BigQuery",
+      "An employee uses an internal BI tool and types a natural language question, such as \"What was our total pulp production in Q2 for the southern region, and how does that compare to Q1?\"",
       "The question is sent to a Gemini model that has been trained on the company's BigQuery schema",
       "The model translates the natural language question into an accurate SQL query",
-      "The query is automatically run against BigQuery , and the results are returned and visualized for the employee, reducing query time"
+      "The query is automatically run against BigQuery, and the results are returned and visualized for the employee, reducing query time"
     ],
     "keywords": [
       "76",
@@ -8301,47 +9082,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sap",
+          "label": "SAP & Business Systems",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Company Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
+          "id": "employee",
+          "label": "Employee",
+          "kind": "user"
+        },
+        {
+          "id": "bi",
+          "label": "BI Tool",
+          "kind": "analytics",
+          "tech": "Looker",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "looker",
-          "label": "BI & Dashboards",
-          "kind": "analytics",
-          "tech": "Looker",
+          "id": "gemini",
+          "label": "NL to SQL",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "sap",
+          "to": "bq",
+          "label": "consolidated data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "employee",
+          "to": "bi",
+          "label": "natural-language question"
         },
         {
-          "from": "vertex_ai",
-          "to": "looker"
+          "from": "bi",
+          "to": "gemini",
+          "label": "question & schema \u2192 SQL"
+        },
+        {
+          "from": "bi",
+          "to": "bq",
+          "label": "run SQL \u2192 visualized results"
         }
       ]
     }
@@ -8362,7 +9156,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a company in the agricultural science sector. Your challenge is helping farmers move from traditional farming methods to a more data-driven approach, enabling them to increase yields and operate more sustainably in the face of changing climate conditions. (Tech stack: BigQuery, Vertex AI, Google Earth Engine, IoT sensors)",
     "dataflow": [
-      "Data from on-farm IoT sensors , satellite imagery from Google Earth Engine , and weather data are all consolidated into BigQuery ",
+      "Data from on-farm IoT sensors, satellite imagery from Google Earth Engine, and weather data are all consolidated into BigQuery",
       "Vertex AI models analyze this multi-layered dataset to generate hyper-local insights for a specific field",
       "A farmer receives a recommendation on their device, such as \"Your soil moisture in Section B is 15% below optimal. Based on the 7-day forecast, I recommend irrigating with 1 inch of water tomorrow morning to maximize yield.\""
     ],
@@ -8399,47 +9193,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "iot",
+          "label": "Field IoT Sensors",
+          "kind": "external"
         },
         {
-          "id": "maps",
-          "label": "Geospatial & Maps",
-          "kind": "network",
-          "tech": "Google Maps Platform",
+          "id": "ee",
+          "label": "Satellite Imagery",
+          "kind": "analytics",
+          "tech": "Google Earth Engine",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "weather",
+          "label": "Weather Data",
+          "kind": "external"
+        },
+        {
+          "id": "bq",
+          "label": "Field Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Field Insights",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "farmer",
+          "label": "Farmer",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "maps"
+          "from": "iot",
+          "to": "bq",
+          "label": "soil & field readings"
         },
         {
-          "from": "maps",
-          "to": "bigquery"
+          "from": "ee",
+          "to": "bq",
+          "label": "satellite imagery"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "weather",
+          "to": "bq",
+          "label": "forecasts"
+        },
+        {
+          "from": "bq",
+          "to": "vertex",
+          "label": "multi-layered data"
+        },
+        {
+          "from": "vertex",
+          "to": "farmer",
+          "label": "irrigation recommendation"
         }
       ]
     }
@@ -8463,7 +9280,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "A retail worker scans a shelf with their device",
       "An on-device computer vision model recognizes the products and counts the inventory",
       "The device compares the count to the store's inventory data and identifies a low-stock item",
-      "A lightweight, on-device model generates an alert and a suggested action, such as \"Only 2 units of 'Product X' left on the shelf. The backroom has 25. Suggest creating a restocking task.\" , empowering the worker to prevent a stockout in the moment"
+      "A lightweight, on-device model generates an alert and a suggested action, such as \"Only 2 units of 'Product X' left on the shelf. The backroom has 25. Suggest creating a restocking task.\", empowering the worker to prevent a stockout in the moment"
     ],
     "keywords": [
       "78",
@@ -8498,59 +9315,55 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "worker",
+          "label": "Retail Worker",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
+          "id": "device",
+          "label": "Device with On-device Models",
           "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Gemini Nano (on-device)"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "inventory",
+          "label": "Store Inventory Data",
+          "kind": "external"
+        },
+        {
+          "id": "vertex",
+          "label": "Model Training",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "mdm",
+          "label": "Device Management Platform",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "worker",
+          "to": "device",
+          "label": "shelf scan"
         },
         {
-          "from": "cloud_run",
-          "to": "mobile"
+          "from": "device",
+          "to": "inventory",
+          "label": "compare counts \u2192 restock alert"
         },
         {
-          "from": "mobile",
-          "to": "vertex_ai"
+          "from": "vertex",
+          "to": "mdm",
+          "label": "on-device models"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "mdm",
+          "to": "device",
+          "label": "model updates"
         }
       ]
     }
@@ -8571,7 +9384,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're an energy transmission provider committed to sustainability. Your challenge is understanding and predicting the real-time carbon intensity of your electricity grid, which is necessary to optimize the use of renewables and reduce overall emissions. (Tech stack: Vertex AI, BigQuery, Cloud Run)",
     "dataflow": [
-      "Real-time data on energy generation from all sources (solar, wind, gas, coal) is streamed into BigQuery ",
+      "Real-time data on energy generation from all sources (solar, wind, gas, coal) is streamed into BigQuery",
       "A Vertex AI forecasting model analyzes this data, along with weather forecasts, to predict the CO2 intensity of the grid for the next 24 hours",
       "A service on Cloud Run exposes this forecast via an API",
       "This allows the grid operator to make smarter decisions, like scheduling high-demand industrial processes for times when renewable energy is plentiful and CO2 intensity is lowest"
@@ -8606,47 +9419,70 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sources",
+          "label": "Generation Sources",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "weather",
+          "label": "Weather Forecasts",
+          "kind": "external"
+        },
+        {
+          "id": "bq",
+          "label": "Grid Generation Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "CO2 Intensity Forecast",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Forecast API",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "operator",
+          "label": "Grid Operator",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "sources",
+          "to": "bq",
+          "label": "real-time generation"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "history"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "weather",
+          "to": "vertex",
+          "label": "forecasts"
+        },
+        {
+          "from": "vertex",
+          "to": "run",
+          "label": "next 24 hours"
+        },
+        {
+          "from": "operator",
+          "to": "run",
+          "label": "API calls"
         }
       ]
     }
@@ -8667,7 +9503,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're an energy services company focused on grid stability and social equity. Your challenge is identifying small pockets of underutilized energy capacity across thousands of commercial buildings that could be aggregated and redirected to benefit communities in need. (Tech stack: Vertex AI, BigQuery, IoT smart meters)",
     "dataflow": [
-      "Data from IoT smart meters in commercial buildings is streamed into BigQuery ",
+      "Data from IoT smart meters in commercial buildings is streamed into BigQuery",
       "Vertex AI models analyze the energy consumption patterns of thousands of buildings to identify \"underutilized capacity\"\u2014for example, an office building that consistently uses 20% less power on Friday afternoons",
       "The system aggregates these small, distributed energy \"assets.\"",
       "This aggregated capacity can then be offered to utilities to stabilize the grid or provided as energy credits to low-income households, creating a new, equitable energy economy"
@@ -8703,47 +9539,57 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "meters",
+          "label": "IoT Smart Meters",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Consumption Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Capacity Analysis",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "aggregation",
+          "label": "Capacity Aggregation",
+          "kind": "service"
+        },
+        {
+          "id": "utilities",
+          "label": "Utilities & Households",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "meters",
+          "to": "bq",
+          "label": "consumption stream"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "bq",
+          "to": "vertex",
+          "label": "patterns"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "vertex",
+          "to": "aggregation",
+          "label": "underutilized capacity"
+        },
+        {
+          "from": "aggregation",
+          "to": "utilities",
+          "label": "grid capacity & credits"
         }
       ]
     }
@@ -8752,8 +9598,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-81",
     "title": "#81 \u00b7 Automate customer onboarding in the energy sector",
     "category": "Blueprint #81 \u00b7 Energy & Utilities",
-    "agentCategory": "code",
-    "icon": "code",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Energy & Utilities"
     ],
@@ -8765,9 +9611,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're an energy company, and signing up new customers is a manual process that involves processing documents like previous utility bills and personal IDs. Your challenge is to automate this workflow to make onboarding faster, reduce fraud, and improve the customer experience. (Tech stack: Document AI, Vertex AI, Cloud Run)",
     "dataflow": [
       "A new customer uploads a photo of their old utility bill and their driver's license to your website",
-      "The files are sent to a service on Cloud Run , which uses Document AI to extract structured data from both documents",
+      "The files are sent to a service on Cloud Run, which uses Document AI to extract structured data from both documents",
       "The service calls a Gemini Flash model with a prompt like, \"Does the name and address on this utility bill match the name and address on this driver's license?\"",
-      "Upon receiving a positive confirmation, the system automatically creates the new customer account, completing the onboarding and verification process in seconds. These architectural blueprints are based on the incredible results customers in the public sector and nonprofits are seeing from using AI. Customers include Alma, Beyond 12, Bower, Climate Ride, Code Path, Pepperdine University and more "
+      "Upon receiving a positive confirmation, the system automatically creates the new customer account, completing the onboarding and verification process in seconds"
     ],
     "keywords": [
       "81",
@@ -8799,13 +9645,18 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "customer",
+          "label": "New Customer",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "web",
+          "label": "Website",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Onboarding Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -8813,33 +9664,51 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Bill & License Extraction",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Identity Match",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini Flash on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "accounts",
+          "label": "Customer Accounts",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "customer",
+          "to": "web",
+          "label": "utility bill & license photos"
         },
         {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "web",
+          "to": "run",
+          "label": "files"
         },
         {
-          "from": "docai",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "docai",
+          "label": "structured data"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "do name & address match?"
+        },
+        {
+          "from": "run",
+          "to": "accounts",
+          "label": "create account"
         }
       ]
     }
@@ -8848,8 +9717,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-82",
     "title": "#82 \u00b7 Build a conversational coach for student success",
     "category": "Blueprint #82 \u00b7 Public Sector, Education & Nonprofits",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Public Sector, Education & Nonprofits"
     ],
@@ -8860,7 +9729,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a nonprofit or educational institution focused on helping first-generation students from under-resourced communities succeed in college. Your challenge is providing personalized, scalable coaching that can address each student's unique history and goals without making them feel compared to others. (Tech stack: Vertex AI, BigQuery, a student-facing mobile app)",
     "dataflow": [
-      "A student's academic history, goals, and previous interactions are stored in BigQuery ",
+      "A student's academic history, goals, and previous interactions are stored in BigQuery",
       "When the student interacts with the AI coach in their app, their query is sent to a service that retrieves their personal context from BigQuery",
       "This history and the student's question are sent to a Gemini model with a prompt like, \"This student is feeling overwhelmed with their chemistry class. Based on their goal of becoming a nurse, provide an encouraging response and suggest two specific campus resources that can help.\"",
       "The AI delivers a personalized, empathetic response, acting as a scalable mentor"
@@ -8899,47 +9768,58 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "student",
+          "label": "Student",
           "kind": "user"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "app",
+          "label": "Coach App",
+          "kind": "mobile"
+        },
+        {
+          "id": "svc",
+          "label": "Coach Service",
+          "kind": "service",
+          "group": "gcp"
+        },
+        {
+          "id": "bq",
+          "label": "Student History",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Coaching Response",
           "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "student",
+          "to": "app",
+          "label": "question"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "app",
+          "to": "svc",
+          "label": "query"
         },
         {
-          "from": "vertex_ai",
-          "to": "mobile"
+          "from": "svc",
+          "to": "bq",
+          "label": "personal context"
+        },
+        {
+          "from": "svc",
+          "to": "gemini",
+          "label": "history + question"
         }
       ]
     }
@@ -8961,7 +9841,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a legal aid nonprofit. Your challenge is that clients are often overwhelmed by complex legal documents and don't know what their next steps are, while your staff has limited bandwidth to provide one-on-one guidance for every query. (Tech stack: Document AI, Vertex AI, Cloud Run)",
     "dataflow": [
       "An asylum seeker uses their phone to take a picture of a legal letter they received",
-      "The image is uploaded to a service on Cloud Run , which sends it to Document AI to extract all the text and key entities like dates and case numbers",
+      "The image is uploaded to a service on Cloud Run, which sends it to Document AI to extract all the text and key entities like dates and case numbers",
       "The extracted text is then sent to a fine-tuned Gemini model with a prompt like, \"Based on this legal notice, explain what it means in simple terms and list the top 3 most important next steps the recipient should take.\"",
       "The app displays the simplified explanation and actionable guidance, empowering the user to navigate the complex legal process"
     ],
@@ -8999,13 +9879,18 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "user",
+          "label": "Asylum Seeker",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "app",
+          "label": "Phone App",
+          "kind": "mobile"
+        },
+        {
+          "id": "run",
+          "label": "Legal Aid Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -9013,33 +9898,41 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Letter Extraction",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Plain-language Guidance",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "user",
+          "to": "app",
+          "label": "photo of legal letter"
         },
         {
-          "from": "cloud_run",
-          "to": "docai"
+          "from": "app",
+          "to": "run",
+          "label": "image"
         },
         {
-          "from": "docai",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "docai",
+          "label": "text, dates, case numbers"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "explanation & next steps"
         }
       ]
     }
@@ -9048,8 +9941,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-84",
     "title": "#84 \u00b7 Develop an SMS chatbot for public benefits applications",
     "category": "Blueprint #84 \u00b7 Public Sector, Education & Nonprofits",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Public Sector, Education & Nonprofits"
     ],
@@ -9064,7 +9957,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "The SMS API receives the message and forwards it to a Vertex AI Conversation agent",
       "The agent initiates a conversation, asking simple, conversational questions to determine eligibility (e.g., \"How many people are in your household?\" )",
       "Based on the user's responses, the agent checks the eligibility database",
-      "The chatbot provides an immediate response, such as \"Based on your answers, you are likely eligible for SNAP benefits. Would you like me to help you start the application?\" , turning a multi-day process into minutes"
+      "The chatbot provides an immediate response, such as \"Based on your answers, you are likely eligible for SNAP benefits. Would you like me to help you start the application?\", turning a multi-day process into minutes"
     ],
     "keywords": [
       "84",
@@ -9099,47 +9992,45 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "resident",
+          "label": "Resident",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "sms",
+          "label": "SMS Gateway",
+          "kind": "api",
+          "tech": "SMS API"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "agent",
+          "label": "Benefits Agent",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Vertex AI Conversation",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "db",
+          "label": "Eligibility Database",
+          "kind": "database"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "resident",
+          "to": "sms",
+          "label": "text \"FOOD\""
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "sms",
+          "to": "agent",
+          "label": "message"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "agent",
+          "to": "db",
+          "label": "eligibility check"
         }
       ]
     }
@@ -9148,8 +10039,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-85",
     "title": "#85 \u00b7 Create a digital case manager to assist social workers",
     "category": "Blueprint #85 \u00b7 Public Sector, Education & Nonprofits",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Public Sector, Education & Nonprofits"
     ],
@@ -9161,7 +10052,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a nonprofit where caseworkers are responsible for large caseloads. Your challenge is that these workers spend dozens of hours per week on administrative tasks like writing action plans and summaries, taking time away from direct, high-impact work with beneficiaries. (Tech stack: Vertex AI, a case management system (e.g., Salesforce), Cloud Functions)",
     "dataflow": [
       "A caseworker finishes a meeting with a beneficiary",
-      "The notes from the meeting are saved in their case management system, which triggers a Cloud Function ",
+      "The notes from the meeting are saved in their case management system, which triggers a Cloud Function",
       "The function retrieves the new notes along with the beneficiary's entire case history",
       "This information is sent to a Gemini model with a prompt like, \"Based on this beneficiary's history and the notes from today's meeting, draft a detailed action plan for the next 30 days.\"",
       "The AI-generated draft plan is automatically added to the case file, ready for the caseworker to review and approve, saving them hours of writing"
@@ -9202,59 +10093,54 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "caseworker",
+          "label": "Caseworker",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "cms",
+          "label": "Case Management (Salesforce)",
+          "kind": "external"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
+          "id": "fn",
+          "label": "Plan Drafting Function",
           "kind": "function",
           "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Action Plan Drafting",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "caseworker",
+          "to": "cms",
+          "label": "meeting notes"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "cms",
+          "to": "fn",
+          "label": "notes saved",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "gemini",
+          "label": "history + notes"
         },
         {
-          "from": "functions",
-          "to": "bigquery"
+          "from": "fn",
+          "to": "cms",
+          "label": "30-day plan draft",
+          "style": "dashed"
         }
       ]
     }
@@ -9304,66 +10190,58 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "subtitle": "Gen AI Technical Blueprint \u00b7 Public Sector, Education & Nonprofits (Gemini for Google Workspace)",
       "groups": [
         {
-          "id": "gcp",
-          "label": "Google Cloud",
-          "kind": "region"
+          "id": "ws",
+          "label": "Google Workspace",
+          "kind": "boundary"
         }
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "writer",
+          "label": "Grant Writer",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "workspace",
-          "label": "Workspace & Gemini",
+          "id": "doc",
+          "label": "Proposal Template",
           "kind": "client",
-          "tech": "Google Workspace",
-          "provider": "gcp",
-          "group": "gcp"
+          "tech": "Google Docs",
+          "group": "ws"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Gemini in Docs",
+          "kind": "ai",
+          "tech": "Gemini for Google Workspace",
           "provider": "gcp",
-          "group": "gcp"
+          "group": "ws"
+        },
+        {
+          "id": "sources",
+          "label": "Website & Past Proposals",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "writer",
+          "to": "doc",
+          "label": "opens template"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "writer",
+          "to": "gemini",
+          "label": "mission summary prompt"
         },
         {
-          "from": "vertex_ai",
-          "to": "workspace"
+          "from": "sources",
+          "to": "gemini",
+          "label": "context"
         },
         {
-          "from": "workspace",
-          "to": "bigquery"
+          "from": "gemini",
+          "to": "doc",
+          "label": "generated sections"
         }
       ]
     }
@@ -9372,8 +10250,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-87",
     "title": "#87 \u00b7 Build a platform to match talent with job opportunities",
     "category": "Blueprint #87 \u00b7 Public Sector, Education & Nonprofits",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Public Sector, Education & Nonprofits"
     ],
@@ -9384,8 +10262,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a government agency or nonprofit focused on workforce development. Your challenge is connecting qualified candidates, especially those from non-traditional backgrounds, with relevant job opportunities in the private sector efficiently and at scale. (Tech stack: Vector Search, BigQuery, Cloud Run)",
     "dataflow": [
-      "Job seekers and employers create profiles on the platform, and the data is stored in BigQuery ",
-      "Candidate skills and job requirements are converted into vector embeddings and indexed in Vector Search ",
+      "Job seekers and employers create profiles on the platform, and the data is stored in BigQuery",
+      "Candidate skills and job requirements are converted into vector embeddings and indexed in Vector Search",
       "When a new job is posted, the system uses the Vector Search to find the top candidate profiles with the most similar embeddings",
       "For each match, Gemini can be used to generate a personalized pitch, such as \"This candidate seems like a strong fit for your 'Software Engineer' role because their project experience in 'X' aligns with your need for 'Y'.\""
     ],
@@ -9425,38 +10303,38 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "nodes": [
         {
           "id": "users",
-          "label": "Users & Sources",
+          "label": "Job Seekers & Employers",
           "kind": "user"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "run",
+          "label": "Matching Service",
+          "kind": "service",
+          "tech": "Cloud Run",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "bq",
+          "label": "Profiles & Jobs",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vector_search",
-          "label": "Vector Search",
+          "id": "vs",
+          "label": "Skill Embeddings",
           "kind": "ai",
           "tech": "Vertex AI Vector Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Match Pitch",
           "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "cloud_run",
-          "label": "App Service",
-          "kind": "service",
-          "tech": "Cloud Run",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
@@ -9464,19 +10342,29 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "edges": [
         {
           "from": "users",
-          "to": "bigquery"
+          "to": "run",
+          "label": "profiles & job posts"
         },
         {
-          "from": "bigquery",
-          "to": "vector_search"
+          "from": "run",
+          "to": "bq",
+          "label": "store"
         },
         {
-          "from": "vector_search",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vs",
+          "label": "embeddings indexed",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "run",
+          "to": "vs",
+          "label": "top candidates"
+        },
+        {
+          "from": "run",
+          "to": "gemini",
+          "label": "personalized pitch"
         }
       ]
     }
@@ -9497,9 +10385,9 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a local government or county office. Your challenge is providing residents with quick and accurate answers to their questions, as your small staff can get overwhelmed with calls, and information on your website can be hard to find. (Tech stack: Vertex AI Search, Cloud Run)",
     "dataflow": [
-      "All public county documents, meeting minutes, and website pages are indexed into Vertex AI Search ",
+      "All public county documents, meeting minutes, and website pages are indexed into Vertex AI Search",
       "A resident visits the county website and uses a chatbot to ask, \"When is the next town hall meeting about the new park?\"",
-      "The query is sent to a service on Cloud Run , which passes it to Vertex AI Search",
+      "The query is sent to a service on Cloud Run, which passes it to Vertex AI Search",
       "The system finds the relevant information from the indexed documents and provides a direct answer with a link to the source",
       "This empowers residents with self-service access to information and frees up county staff"
     ],
@@ -9536,29 +10424,31 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "docs",
+          "label": "County Documents & Pages",
+          "kind": "external"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "County Knowledge Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "resident",
+          "label": "Resident",
+          "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "site",
+          "label": "County Website Chatbot",
+          "kind": "client"
+        },
+        {
+          "id": "run",
+          "label": "Chat Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -9567,16 +10457,25 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "vai_search"
+          "from": "docs",
+          "to": "search",
+          "label": "indexed",
+          "style": "dashed"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "resident",
+          "to": "site",
+          "label": "question"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "site",
+          "to": "run",
+          "label": "query"
+        },
+        {
+          "from": "run",
+          "to": "search",
+          "label": "query \u2192 answer with source link"
         }
       ]
     }
@@ -9585,8 +10484,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-89",
     "title": "#89 \u00b7 Use AI to improve tax collection and auditing",
     "category": "Blueprint #89 \u00b7 Public Sector, Education & Nonprofits",
-    "agentCategory": "security",
-    "icon": "security",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Public Sector, Education & Nonprofits"
     ],
@@ -9598,7 +10497,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a municipal finance office responsible for tax collection. Your challenge is ensuring that tax classifications on invoices are correct, as manual audits can only cover a tiny fraction of submissions, leading to significant lost revenue from misclassifications. (Tech stack: Document AI, Vertex AI, BigQuery)",
     "dataflow": [
       "When a company submits an invoice, it is automatically processed by Document AI to extract the service descriptions and declared tax category",
-      "The extracted data is stored in BigQuery ",
+      "The extracted data is stored in BigQuery",
       "A Vertex AI classification model, trained on historical data of correct and incorrect classifications, analyzes the service description from the new invoice",
       "If the model predicts a different category than the one declared by the taxpayer (e.g., it classifies a \"consulting\" service as \"software development,\" which has a higher tax rate), the invoice is flagged for human review, improving accuracy and tax collection"
     ],
@@ -9634,47 +10533,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "companies",
+          "label": "Companies",
+          "kind": "external"
         },
         {
           "id": "docai",
-          "label": "Document Parser",
+          "label": "Invoice Extraction",
           "kind": "ai",
           "tech": "Document AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Invoice Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Tax Category Classifier",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "auditors",
+          "label": "Tax Auditors",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "docai"
+          "from": "companies",
+          "to": "docai",
+          "label": "invoices"
         },
         {
           "from": "docai",
-          "to": "bigquery"
+          "to": "bq",
+          "label": "descriptions & declared category"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "bq",
+          "to": "vertex",
+          "label": "classify"
+        },
+        {
+          "from": "vertex",
+          "to": "auditors",
+          "label": "mismatched invoices"
         }
       ]
     }
@@ -9695,7 +10607,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a nonprofit fact-checking organization. Your challenge is the sheer volume of new information being published every second, making it impossible for your human fact-checkers to monitor everything and identify which claims need to be addressed most urgently. (Tech stack: Pub/Sub, Vertex AI, Cloud Functions)",
     "dataflow": [
-      "A constant stream of content from news sites and social media APIs flows into Pub/Sub ",
+      "A constant stream of content from news sites and social media APIs flows into Pub/Sub",
       "A Cloud Function is triggered for each new piece of content",
       "The content is sent to a Gemini model with a prompt like, \"Analyze this news article. Identify any verifiable claims and check them against our database of known misinformation. Flag any new, rapidly-spreading, or potentially-harmful claims.\"",
       "The system automatically filters out noise and surfaces a prioritized list of new, high-impact claims for human fact-checkers to investigate, allowing them to focus their efforts where it matters most"
@@ -9733,47 +10645,61 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sources",
+          "label": "News & Social Media APIs",
+          "kind": "external"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
+          "id": "ps",
+          "label": "Content Stream",
           "kind": "queue",
           "tech": "Pub/Sub",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "functions",
-          "label": "Event Functions",
+          "id": "fn",
+          "label": "Claim Analysis Function",
           "kind": "function",
           "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Claim Detection",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "checkers",
+          "label": "Fact-checkers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "pubsub"
+          "from": "sources",
+          "to": "ps",
+          "label": "content"
         },
         {
-          "from": "pubsub",
-          "to": "vertex_ai"
+          "from": "ps",
+          "to": "fn",
+          "label": "each item",
+          "style": "dashed"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "gemini",
+          "label": "identify & check claims"
+        },
+        {
+          "from": "fn",
+          "to": "checkers",
+          "label": "prioritized new claims"
         }
       ]
     }
@@ -9781,11 +10707,11 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
   {
     "id": "genai-bp-91",
     "title": "#91 \u00b7 Accelerate discovery of hidden objects",
-    "category": "Blueprint #91 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "category": "Blueprint #91 \u00b7 Public Sector, Education & Nonprofits",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
-      "Cross-Industry Enterprise AI"
+      "Public Sector, Education & Nonprofits"
     ],
     "pillars": [
       "AI & ML Perspective",
@@ -9794,10 +10720,10 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a scientific institute. Your challenge is finding \"hidden\" objects like asteroids in massive astronomical datasets, a task that is like finding a needle in a haystack for human researchers. (Tech stack: BigQuery, Vertex AI, Google Cloud Storage)",
     "dataflow": [
-      "Petabytes of astronomical image data from telescope surveys are stored in Google Cloud Storage and cataloged in BigQuery ",
+      "Petabytes of astronomical image data from telescope surveys are stored in Google Cloud Storage and cataloged in BigQuery",
       "A Vertex AI computer vision model is trained to recognize the faint, tell-tale signs of moving objects against the background of stars",
       "The model is run on the entire historical dataset, analyzing images that have already been reviewed by humans",
-      "The AI flags potential new asteroid discoveries that were missed by previous methods, which are then presented to astronomers for verification, dramatically accelerating the rate of discovery. These architectural blueprints are inspired by customers who are using AI in the technology industry, such as: Personal AI, Causal, Abstrakt, BMC, Snap, Augment, Box, Twilio, and more "
+      "The AI flags potential new asteroid discoveries that were missed by previous methods, which are then presented to astronomers for verification, dramatically accelerating the rate of discovery"
     ],
     "keywords": [
       "91",
@@ -9820,7 +10746,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       "diagram_type": "architecture",
       "direction": "LR",
       "title": "#91 \u00b7 Accelerate discovery of hidden objects",
-      "subtitle": "Gen AI Technical Blueprint \u00b7 Cross-Industry Enterprise AI (BigQuery, Vertex AI, Google Cloud Storage)",
+      "subtitle": "Gen AI Technical Blueprint \u00b7 Public Sector, Education & Nonprofits (BigQuery, Vertex AI, Google Cloud Storage)",
       "groups": [
         {
           "id": "gcp",
@@ -9830,47 +10756,65 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "telescopes",
+          "label": "Telescope Surveys",
+          "kind": "external"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Survey Images",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Image Catalog",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Moving-object Detection",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "astronomers",
+          "label": "Astronomers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "telescopes",
+          "to": "gcs",
+          "label": "petabytes of images"
         },
         {
           "from": "gcs",
-          "to": "bigquery"
+          "to": "bq",
+          "label": "catalog"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "gcs",
+          "to": "vertex",
+          "label": "historical images"
+        },
+        {
+          "from": "bq",
+          "to": "vertex",
+          "label": "reviewed labels"
+        },
+        {
+          "from": "vertex",
+          "to": "astronomers",
+          "label": "candidate asteroids"
         }
       ]
     }
@@ -9879,8 +10823,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-92",
     "title": "#92 \u00b7 Build a personal AI that learns from your data",
     "category": "Blueprint #92 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "creative",
-    "icon": "shopping_cart",
+    "agentCategory": "customer",
+    "icon": "smart_toy",
     "industries": [
       "Cross-Industry Enterprise AI"
     ],
@@ -9892,8 +10836,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a technology company aiming to create a truly personal AI assistant. Your challenge is moving beyond generic, one-size-fits-all models to create an AI that is trained exclusively on an individual's own data, facts, and opinions, ensuring privacy and a perfectly tailored experience. (Tech stack: Vertex AI, Google Cloud Storage, Cloud Run)",
     "dataflow": [
       "A user uploads their personal data (documents, emails, notes) to a secure Google Cloud Storage bucket",
-      "A fine-tuning job is initiated on Vertex AI , training a baseline Gemini model exclusively on this personal data corpus",
-      "The resulting \"personal language model\" is deployed to a secure endpoint on Cloud Run ",
+      "A fine-tuning job is initiated on Vertex AI, training a baseline Gemini model exclusively on this personal data corpus",
+      "The resulting \"personal language model\" is deployed to a secure endpoint on Cloud Run",
       "When the user interacts with their personal AI, their queries are sent only to their own custom model, allowing it to provide responses that reflect their unique knowledge, style, and memory"
     ],
     "keywords": [
@@ -9930,29 +10874,29 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "user",
+          "label": "User",
           "kind": "user"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Personal Data Bucket",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "tuning",
+          "label": "Fine-tuning Job",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Personal Model Endpoint",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
@@ -9961,16 +10905,24 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "user",
+          "to": "gcs",
+          "label": "documents, emails, notes"
         },
         {
           "from": "gcs",
-          "to": "vertex_ai"
+          "to": "tuning",
+          "label": "training corpus"
         },
         {
-          "from": "vertex_ai",
-          "to": "cloud_run"
+          "from": "tuning",
+          "to": "run",
+          "label": "personal model"
+        },
+        {
+          "from": "user",
+          "to": "run",
+          "label": "queries"
         }
       ]
     }
@@ -9979,8 +10931,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-93",
     "title": "#93 \u00b7 Create an AI-powered financial planning wizard",
     "category": "Blueprint #93 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "employee",
-    "icon": "document_scanner",
+    "agentCategory": "data",
+    "icon": "query_stats",
     "industries": [
       "Cross-Industry Enterprise AI"
     ],
@@ -9992,7 +10944,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a fintech company providing financial planning software for startups. Your challenge is that new users often struggle with the initial setup, which requires connecting disparate data sources and building complex financial models from scratch. (Tech stack: Vertex AI, BigQuery, connections to third-party data source APIs)",
     "dataflow": [
       "A new user signs up and grants access to their financial data sources (e.g., accounting software, bank accounts)",
-      "An AI wizard ingests the data into BigQuery ",
+      "An AI wizard ingests the data into BigQuery",
       "The wizard sends the consolidated data to Gemini with a prompt like, \"Analyze this company's financial data. Identify key revenue streams, cost centers, and growth patterns, then generate a standard three-statement financial model.\"",
       "Gemini generates the baseline model, which is then presented to the user, turning a multi-hour setup process into minutes"
     ],
@@ -10031,47 +10983,58 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "owner",
+          "label": "Business Owner",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
+          "id": "apis",
+          "label": "Accounting & Bank APIs",
+          "kind": "external"
+        },
+        {
+          "id": "wizard",
+          "label": "Planning Wizard",
           "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Consolidated Financials",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Financial Model Generator",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "owner",
+          "to": "wizard",
+          "label": "grants access"
         },
         {
-          "from": "cloud_run",
-          "to": "bigquery"
+          "from": "apis",
+          "to": "wizard",
+          "label": "financial data"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "wizard",
+          "to": "bq",
+          "label": "ingest"
+        },
+        {
+          "from": "wizard",
+          "to": "gemini",
+          "label": "three-statement model prompt"
         }
       ]
     }
@@ -10080,8 +11043,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-94",
     "title": "#94 \u00b7 Develop a sales co-pilot to help B2B sellers",
     "category": "Blueprint #94 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Cross-Industry Enterprise AI"
     ],
@@ -10092,7 +11055,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a B2B sales technology company. Your challenge is helping sales representatives navigate complex organizational data to find the right insights to close deals, a process that often involves manually sifting through CRM data, past deals, and product documentation. (Tech stack: Vertex AI, BigQuery, CRM integration)",
     "dataflow": [
-      "All of a company's sales data\u2014CRM records, past deals, and product information\u2014is consolidated in BigQuery and indexed into Vertex AI Search ",
+      "All of a company's sales data\u2014CRM records, past deals, and product information\u2014is consolidated in BigQuery and indexed into Vertex AI Search",
       "A salesperson preparing for a call uses a co-pilot and asks, \"I'm about to call a prospect in the manufacturing industry. Give me key talking points, relevant case studies, and potential objections.\"",
       "The co-pilot uses Vertex AI Search to find the most relevant information",
       "Gemini synthesizes this data into a concise briefing document, empowering the salesperson to have a more strategic and effective conversation"
@@ -10129,47 +11092,71 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "crm",
+          "label": "CRM & Deal Records",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Sales Data",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Sales Knowledge Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "seller",
+          "label": "Salesperson",
+          "kind": "user"
+        },
+        {
+          "id": "copilot",
+          "label": "Sales Co-pilot",
+          "kind": "client"
+        },
+        {
+          "id": "gemini",
+          "label": "Call Briefing",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "crm",
+          "to": "bq",
+          "label": "CRM integration"
         },
         {
-          "from": "bigquery",
-          "to": "vai_search"
+          "from": "bq",
+          "to": "search",
+          "label": "indexed",
+          "style": "dashed"
         },
         {
-          "from": "vai_search",
-          "to": "vertex_ai"
+          "from": "seller",
+          "to": "copilot",
+          "label": "call prep question"
+        },
+        {
+          "from": "copilot",
+          "to": "search",
+          "label": "relevant info"
+        },
+        {
+          "from": "copilot",
+          "to": "gemini",
+          "label": "findings \u2192 briefing"
         }
       ]
     }
@@ -10231,59 +11218,81 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "user",
+          "label": "User",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "calendar",
+          "label": "Calendar",
+          "kind": "external"
+        },
+        {
+          "id": "agent",
+          "label": "Meeting Agent",
           "kind": "service",
-          "tech": "Cloud Run",
+          "group": "gcp"
+        },
+        {
+          "id": "fn",
+          "label": "Transcription Function",
+          "kind": "function",
+          "tech": "Cloud Run functions",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "stt",
-          "label": "Speech to Text",
+          "label": "Transcription",
           "kind": "ai",
           "tech": "Speech-to-Text",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Summary & Action Items",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "functions",
-          "label": "Event Functions",
-          "kind": "function",
-          "tech": "Cloud Run functions",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "email",
+          "label": "Attendee Email",
+          "kind": "email"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "user",
+          "to": "calendar",
+          "label": "connects agent"
         },
         {
-          "from": "cloud_run",
-          "to": "stt"
+          "from": "calendar",
+          "to": "agent",
+          "label": "meeting starts"
         },
         {
-          "from": "stt",
-          "to": "vertex_ai"
+          "from": "agent",
+          "to": "fn",
+          "label": "recorded audio"
         },
         {
-          "from": "vertex_ai",
-          "to": "functions"
+          "from": "fn",
+          "to": "stt",
+          "label": "audio file"
+        },
+        {
+          "from": "fn",
+          "to": "gemini",
+          "label": "transcript"
+        },
+        {
+          "from": "fn",
+          "to": "email",
+          "label": "summary & action items"
         }
       ]
     }
@@ -10292,8 +11301,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-96",
     "title": "#96 \u00b7 Create an enterprise search engine for workplace knowledge",
     "category": "Blueprint #96 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Cross-Industry Enterprise AI"
     ],
@@ -10304,7 +11313,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a company whose employees use dozens of different applications (like Slack, Google Drive, Salesforce, Confluence). Your challenge is that valuable company knowledge is fragmented across these silos, making it nearly impossible for employees to find the information they need to do their jobs effectively. (Tech stack: Vertex AI Search, connectors to various enterprise applications)",
     "dataflow": [
-      "Secure connectors are used to index all of a company's data from its various workplace apps into Vertex AI Search , respecting all existing user permissions",
+      "Secure connectors are used to index all of a company's data from its various workplace apps into Vertex AI Search, respecting all existing user permissions",
       "An employee uses a single search bar and asks a question like, \"What was our Q3 marketing strategy for the new product launch?\"",
       "Vertex AI Search queries across all connected data sources\u2014finding the strategy document in Google Drive, the related conversations in Slack, and the campaign results in Salesforce",
       "It returns a unified, synthesized answer with links to the original sources, allowing employees to find information"
@@ -10341,59 +11350,35 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "apps",
+          "label": "Drive, Slack & Salesforce",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vai_search",
-          "label": "Enterprise Search",
+          "id": "search",
+          "label": "Workplace Search",
           "kind": "ai",
           "tech": "Vertex AI Search",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
-          "kind": "ai",
-          "tech": "Vertex AI",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "employee",
+          "label": "Employee",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "apps",
+          "to": "search",
+          "label": "connectors (permission-aware)",
+          "style": "dashed"
         },
         {
-          "from": "cloud_run",
-          "to": "vai_search"
-        },
-        {
-          "from": "vai_search",
-          "to": "vertex_ai"
-        },
-        {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "employee",
+          "to": "search",
+          "label": "question \u2192 answer with sources"
         }
       ]
     }
@@ -10414,7 +11399,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a business with hundreds of CCTV cameras for security. Your challenge is that these cameras generate thousands of hours of passive video footage that is only reviewed after an incident occurs, providing no proactive operational or business insights. (Tech stack: Vertex AI, Cloud Storage, a mobile alerting system)",
     "dataflow": [
-      "Live video feeds from CCTV cameras are streamed to Google Cloud Storage ",
+      "Live video feeds from CCTV cameras are streamed to Google Cloud Storage",
       "A multimodal Gemini model, acting as a \"video intelligence agent,\" continuously monitors the feeds",
       "The agent is given specific tasks via natural language prompts, such as \"Monitor the store entrance and send an alert if more than 10 people are waiting in line for over 5 minutes,\" or \"Alert security if anyone enters the warehouse after 10 PM.\"",
       "When the AI agent detects a specified event, it automatically sends a real-time alert with a video clip to the relevant personnel's mobile device"
@@ -10455,59 +11440,57 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "cameras",
+          "label": "CCTV Cameras",
+          "kind": "external"
         },
         {
           "id": "gcs",
-          "label": "Object Storage",
+          "label": "Video Feeds",
           "kind": "storage",
           "tech": "Cloud Storage",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Video Intelligence Agent",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vision",
-          "label": "Vision & Video AI",
-          "kind": "ai",
-          "tech": "Vertex AI Vision",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "operators",
+          "label": "Operators",
+          "kind": "user"
         },
         {
-          "id": "mobile",
-          "label": "Mobile & Edge Devices",
-          "kind": "mobile",
-          "tech": "Android & Edge",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "alerts",
+          "label": "Mobile Alerting",
+          "kind": "mobile"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gcs"
+          "from": "cameras",
+          "to": "gcs",
+          "label": "live video"
         },
         {
           "from": "gcs",
-          "to": "vertex_ai"
+          "to": "gemini",
+          "label": "continuous monitoring"
         },
         {
-          "from": "vertex_ai",
-          "to": "vision"
+          "from": "operators",
+          "to": "gemini",
+          "label": "natural-language tasks"
         },
         {
-          "from": "vision",
-          "to": "mobile"
+          "from": "gemini",
+          "to": "alerts",
+          "label": "alert + clip"
         }
       ]
     }
@@ -10516,8 +11499,8 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "id": "genai-bp-98",
     "title": "#98 \u00b7 Build an agent for B2B workflow automation",
     "category": "Blueprint #98 \u00b7 Cross-Industry Enterprise AI",
-    "agentCategory": "customer",
-    "icon": "smart_toy",
+    "agentCategory": "employee",
+    "icon": "document_scanner",
     "industries": [
       "Cross-Industry Enterprise AI"
     ],
@@ -10567,47 +11550,67 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "hr",
+          "label": "HR System",
+          "kind": "external"
         },
         {
-          "id": "cloud_run",
-          "label": "Application API",
-          "kind": "service",
-          "tech": "Cloud Run",
-          "provider": "gcp",
-          "group": "gcp"
-        },
-        {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "agent",
+          "label": "HR Onboarding Agent",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Vertex AI Agent Builder",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Analytics Store",
-          "kind": "analytics",
-          "tech": "BigQuery",
+          "id": "gemini",
+          "label": "Task Orchestration",
+          "kind": "ai",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "identity",
+          "label": "Account Provisioning API",
+          "kind": "external"
+        },
+        {
+          "id": "training",
+          "label": "Training System API",
+          "kind": "external"
+        },
+        {
+          "id": "calendar",
+          "label": "Calendar API",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "hr",
+          "to": "agent",
+          "label": "new hire"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "agent",
+          "to": "gemini",
+          "label": "plan the steps"
         },
         {
-          "from": "vertex_ai",
-          "to": "bigquery"
+          "from": "agent",
+          "to": "identity",
+          "label": "create account"
+        },
+        {
+          "from": "agent",
+          "to": "training",
+          "label": "assign training"
+        },
+        {
+          "from": "agent",
+          "to": "calendar",
+          "label": "schedule orientation"
         }
       ]
     }
@@ -10628,7 +11631,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're a product development company, and you need to understand how customers feel about your product, but their feedback is scattered across support tickets, app store reviews, and social media. Manually analyzing this unstructured text is a massive challenge. (Tech stack: Vertex AI, BigQuery, data ingestion tools (e.g., Pub/Sub))",
     "dataflow": [
-      "All customer feedback streams from various sources into BigQuery ",
+      "All customer feedback streams from various sources into BigQuery",
       "A scheduled job sends batches of new feedback to a Gemini model",
       "The model is given a prompt like, \"Analyze this feedback. Categorize each comment by topic (e.g., 'UI/UX', 'Pricing', 'Bug Report'), determine the sentiment (Positive, Negative, Neutral), and extract any feature requests.\"",
       "The structured, analyzed data is written back to BigQuery",
@@ -10669,47 +11672,81 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "sources",
+          "label": "Feedback Sources",
+          "kind": "external"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "ps",
+          "label": "Feedback Ingestion",
+          "kind": "queue",
+          "tech": "Pub/Sub",
+          "provider": "gcp",
+          "group": "gcp"
+        },
+        {
+          "id": "bq",
+          "label": "Feedback Warehouse",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "job",
+          "label": "Scheduled Batch Job",
+          "kind": "function",
+          "group": "gcp"
+        },
+        {
+          "id": "gemini",
+          "label": "Topic & Sentiment Analysis",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "pubsub",
-          "label": "Event Stream",
-          "kind": "queue",
-          "tech": "Pub/Sub",
-          "provider": "gcp",
-          "group": "gcp"
+          "id": "dash",
+          "label": "Trends Dashboard",
+          "kind": "client"
+        },
+        {
+          "id": "pms",
+          "label": "Product Managers",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "bigquery"
+          "from": "sources",
+          "to": "ps",
+          "label": "feedback"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "ps",
+          "to": "bq",
+          "label": "stream"
         },
         {
-          "from": "vertex_ai",
-          "to": "pubsub"
+          "from": "job",
+          "to": "bq",
+          "label": "read new feedback, write results"
+        },
+        {
+          "from": "job",
+          "to": "gemini",
+          "label": "batches"
+        },
+        {
+          "from": "bq",
+          "to": "dash",
+          "label": "trends"
+        },
+        {
+          "from": "pms",
+          "to": "dash",
+          "label": "data-driven action"
         }
       ]
     }
@@ -10731,7 +11768,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     "summary": "You're a digital marketing platform, and your clients need to create a high volume of ads for different products and channels. Your challenge is automating the creative process so they can launch effective campaigns without needing a large design team. (Tech stack: Vertex AI, Text-to-Speech API, Cloud Run)",
     "dataflow": [
       "A user provides a few key details about their product and a target audience",
-      "This information is sent to a service on Cloud Run , which constructs a prompt for Gemini like, \"Generate three different ad headlines and a short script for a 15-second video ad for a new running shoe targeting marathon runners.\"",
+      "This information is sent to a service on Cloud Run, which constructs a prompt for Gemini like, \"Generate three different ad headlines and a short script for a 15-second video ad for a new running shoe targeting marathon runners.\"",
       "Gemini generates the text",
       "The service then sends the script to the Text-to-Speech API to create a voiceover",
       "The text and voiceover are then combined with product images using a template, automatically generating multiple ad variations that are ready to be deployed"
@@ -10770,48 +11807,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
+          "id": "marketer",
+          "label": "Marketer",
           "kind": "user"
         },
         {
-          "id": "cloud_run",
-          "label": "App Service",
+          "id": "run",
+          "label": "Ad Creative Service",
           "kind": "service",
           "tech": "Cloud Run",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "gemini",
+          "label": "Headlines & Script",
           "kind": "ai",
-          "tech": "Vertex AI",
+          "tech": "Gemini on Vertex AI",
           "provider": "gcp",
           "group": "gcp"
         },
         {
           "id": "tts",
-          "label": "Text to Speech",
+          "label": "Voiceover",
           "kind": "ai",
           "tech": "Text-to-Speech",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "templates",
+          "label": "Templates & Product Images",
+          "kind": "external"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "cloud_run"
+          "from": "marketer",
+          "to": "run",
+          "label": "product & audience"
         },
         {
-          "from": "cloud_run",
-          "to": "vertex_ai"
+          "from": "run",
+          "to": "gemini",
+          "label": "ad prompt"
         },
         {
-          "from": "vertex_ai",
+          "from": "run",
           "to": "tts",
-          "label": "Gemini generates the"
+          "label": "script"
+        },
+        {
+          "from": "templates",
+          "to": "run",
+          "label": "images & templates"
         }
       ]
     }
@@ -10832,7 +11881,7 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
     ],
     "summary": "You're an enterprise that is deploying multiple AI applications, but you lack the tools to monitor, troubleshoot, and evaluate their performance in production. Your challenge is ensuring these AI systems are accurate, safe, and effective once they are live. (Tech stack: Google Kubernetes Engine (GKE), BigQuery, Vertex AI)",
     "dataflow": [
-      "An enterprise's AI applications send their inputs, outputs, and model telemetry data to an observability platform running on GKE ",
+      "An enterprise's AI applications send their inputs, outputs, and model telemetry data to an observability platform running on GKE",
       "This data is processed and stored in BigQuery for large-scale analysis",
       "The platform uses Vertex AI models to automatically detect issues like \"model drift\" (when a model's performance degrades over time) or \"hallucinations\" (when an LLM generates incorrect information)",
       "When an issue is detected, the platform sends an alert to the development team via a dashboard, allowing them to quickly diagnose and fix problems with their production AI systems"
@@ -10871,47 +11920,60 @@ export const GEN_AI_101_BLUEPRINTS: BlueprintEntry[] = [
       ],
       "nodes": [
         {
-          "id": "users",
-          "label": "Users & Sources",
-          "kind": "user"
+          "id": "apps",
+          "label": "Production AI Apps",
+          "kind": "external"
         },
         {
           "id": "gke",
-          "label": "App Workloads",
+          "label": "Observability Platform",
           "kind": "container",
           "tech": "Google Kubernetes Engine",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "bigquery",
-          "label": "Enterprise Lakehouse",
+          "id": "bq",
+          "label": "Telemetry Warehouse",
           "kind": "analytics",
           "tech": "BigQuery",
           "provider": "gcp",
           "group": "gcp"
         },
         {
-          "id": "vertex_ai",
-          "label": "Gemini & Vertex AI",
+          "id": "vertex",
+          "label": "Drift & Hallucination Detection",
           "kind": "ai",
           "tech": "Vertex AI",
           "provider": "gcp",
           "group": "gcp"
+        },
+        {
+          "id": "devs",
+          "label": "Development Team",
+          "kind": "user"
         }
       ],
       "edges": [
         {
-          "from": "users",
-          "to": "gke"
+          "from": "apps",
+          "to": "gke",
+          "label": "inputs, outputs, telemetry"
         },
         {
           "from": "gke",
-          "to": "bigquery"
+          "to": "bq",
+          "label": "store for analysis"
         },
         {
-          "from": "bigquery",
-          "to": "vertex_ai"
+          "from": "gke",
+          "to": "vertex",
+          "label": "detect issues"
+        },
+        {
+          "from": "gke",
+          "to": "devs",
+          "label": "alerts on dashboard"
         }
       ]
     }

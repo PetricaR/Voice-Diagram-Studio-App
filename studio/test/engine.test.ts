@@ -212,6 +212,33 @@ describe('edit', () => {
     expectClean(store.scene);
   });
 
+  it('lays out a diagram created without connections once they are added', async () => {
+    // The model sometimes sends the nodes first and the edges in a second call
+    const store = new DiagramStore();
+    await store.create({ ...webApp, edges: [] }, { source: 'voice' });
+    const entries = store.history.length;
+    const r = await handleToolCall('edit_diagram', { summary: 'Connected', add_edges: webApp.edges }, { store, source: 'voice' });
+    expect(r.ok).toBe(true);
+    expect(store.history.length).toBe(entries + 1);
+    const x = (id: string) => store.scene.nodes.find((n) => n.id === id)!.x;
+    expect(x('user')).toBeLessThan(x('lb'));
+    expect(x('lb')).toBeLessThan(x('api'));
+    expect(x('api')).toBeLessThan(x('db'));
+    expectClean(store.scene);
+    store.undo();
+    expect(store.scene.edges).toHaveLength(0);
+  });
+
+  it('keeps hand-placed nodes when an unconnected diagram is connected later', async () => {
+    const store = new DiagramStore();
+    await store.create({ ...webApp, edges: [] }, { source: 'voice' });
+    store.moveNodes(new Map([['db', { x: 600, y: 400 }]]));
+    const before = positions(store.scene);
+    await handleToolCall('edit_diagram', { summary: 'Connected', add_edges: webApp.edges }, { store, source: 'voice' });
+    expect(store.scene.edges).toHaveLength(3);
+    expect(positions(store.scene)).toEqual(before);
+  });
+
   it('undoes and redoes whole requests', async () => {
     const store = await created();
     const v = store.scene;
@@ -444,6 +471,10 @@ describe('Google Cloud Architecture & Gen AI Blueprints', () => {
     const secBlueprints = searchBlueprints('secops threat triage chronicle', { category: 'security' });
     expect(secBlueprints[0]?.id).toBe('genai-secops-agent');
 
+    // The category ranks but never hides: a wrong guess still finds the blueprint the query names
+    expect(searchBlueprints('intelligent search clinical research', { category: 'architecture' })[0]?.id).toBe('genai-bp-48');
+    expect(searchBlueprints('enterprise search engine workplace knowledge', { category: 'customer' })[0]?.id).toBe('genai-bp-96');
+
     const vectorComponents = searchComponents('vector search embeddings', { provider: 'gcp' });
     expect(vectorComponents.some((c) => c.tech.includes('AlloyDB') || c.tech.includes('Vector Search'))).toBe(true);
 
@@ -457,6 +488,21 @@ describe('Google Cloud Architecture & Gen AI Blueprints', () => {
     expect((res.blueprints as any[]).some((b) => b.id === 'data-analytics-lakehouse')).toBe(true);
     expect((res.components as any[]).some((c) => c.tech === 'BigQuery')).toBe(true);
   });
+
+  it('draws every one of the 101 Gen AI blueprints connected and cleanly', async () => {
+    const { loadAllBlueprints } = await import('../src/engine/catalog');
+    for (const bp of await loadAllBlueprints()) {
+      // The article's flow steps, without text of the web page around them
+      expect(bp.dataflow.join(' '), bp.id).not.toMatch(/free credit|These architectural blueprints/);
+      const d = bp.diagram;
+      const linked = new Set((d.edges ?? []).flatMap((e) => [e.from, e.to]));
+      expect((d.nodes ?? []).filter((n) => !linked.has(n.id!)).map((n) => n.id), `${bp.id} unconnected nodes`).toEqual([]);
+      const store = new DiagramStore();
+      const r = await store.create(d, { source: 'system', label: bp.title });
+      expect(r.ok, `${bp.id}: ${r.errors.join('; ')}`).toBe(true);
+      expectClean(store.scene);
+    }
+  }, 120_000);
 
   it('integrates all 261 official Google Cloud SVG icons (Core, Category, and Products)', async () => {
     const fs = await import('node:fs');

@@ -122,6 +122,34 @@ export class DiagramStore {
     return result;
   }
 
+  /**
+   * Applies an edit like edit(). When it gives the first connections to a
+   * diagram that was just created without any (its nodes were laid out as
+   * unconnected boxes, one column), the result is laid out from its
+   * connections in the same history entry. A diagram that changed after it was
+   * created (moved by hand, edited) keeps its positions.
+   */
+  async editConnectingNewDiagram(req: EditRequest, meta: ChangeMeta): Promise<EditResult> {
+    const prev = this.scene;
+    const justCreated = this.entries[this.index].origin === true && prev.nodes.length > 1 && prev.edges.length === 0;
+    if (!justCreated) return this.edit(req, meta);
+    const result = applyEdit(prev, req, { selection: this.selection });
+    if (!result.ok || result.scene.edges.length === 0) return this.edit(req, meta);
+    await layoutScene(result.scene);
+    // Changed while it was being laid out: apply the edit to the current state instead
+    if (this.scene !== prev) return this.edit(req, meta);
+    reflowBlocks(result.scene);
+    const moved = new Set(result.changes.movedNodes);
+    for (const n of prev.nodes) {
+      const m = result.scene.nodes.find((x) => x.id === n.id);
+      if (m != null && (m.x !== n.x || m.y !== n.y)) moved.add(n.id);
+    }
+    result.changes.movedNodes = [...moved];
+    this.push(result.scene, { ...meta, label: meta.label ?? req.summary }, result.changes);
+    this.emit();
+    return result;
+  }
+
   /** Replaces the diagram with a new one, laid out from scratch. */
   async create(req: CreateRequest, meta: ChangeMeta): Promise<EditResult> {
     const prev = this.scene;

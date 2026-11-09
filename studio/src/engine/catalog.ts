@@ -1027,6 +1027,9 @@ export function searchComponents(
     .map((x) => x.c);
 }
 
+/** Score added to blueprints of the requested category (a token naming the category scores 8). */
+const CATEGORY_BOOST = 6;
+
 export function searchBlueprints(
   query = '',
   opts: { category?: string; limit?: number } = {},
@@ -1035,10 +1038,15 @@ export function searchBlueprints(
   const rawNorm = normalize(query);
   const cat = opts.category?.toLowerCase().trim();
   const limit = opts.limit ?? 8;
+  // The category only ranks, it never excludes: the agent guesses it (e.g. "architecture" for a
+  // clinical search platform), and a wrong guess must not hide the blueprint the query names
+  const inCategory = (b: BlueprintEntry) => !!cat && (b.agentCategory === cat || normalize(b.category).includes(normalize(cat)));
 
   return BLUEPRINT_CATALOG
-    .filter((b) => !cat || b.agentCategory === cat || normalize(b.category).includes(normalize(cat)))
-    .map((b) => ({ b, s: scoreBlueprint(b, tokens, rawNorm) }))
+    .map((b) => {
+      const s = scoreBlueprint(b, tokens, rawNorm);
+      return { b, s: s > 0 && inCategory(b) ? s + CATEGORY_BOOST : s };
+    })
     .filter((x) => x.s > 0)
     .sort((a, b) => b.s - a.s)
     .slice(0, limit)
