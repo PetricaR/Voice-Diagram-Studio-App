@@ -43,7 +43,10 @@ interface StepResult {
   unstable: string[];
   calls: string[];
   reply: string;
+  /** From the request to the model going quiet (includes the spoken answer). */
   seconds: number;
+  /** From the request to the first change on the canvas; null when nothing changed. */
+  canvasSeconds: number | null;
 }
 
 /** Existing nodes the step was not supposed to touch that changed anyway. */
@@ -76,6 +79,7 @@ async function runScenario(sc: Scenario): Promise<StepResult[]> {
   let queue = Promise.resolve();
   let request = '';
   const moved = new Set<string>();
+  let firstChangeAt: number | null = null;
   let onReady = () => {};
 
   const client: LiveClient = new LiveClient({
@@ -91,6 +95,7 @@ async function runScenario(sc: Scenario): Promise<StepResult[]> {
       calls.push(`${call.name}(${JSON.stringify(call.args ?? {})})`);
       queue = queue.then(async () => {
         const response = await handleToolCall(call.name, call.args, { store, source: 'text', request });
+        if (response.ok === true && call.name !== 'get_diagram' && call.name !== 'search_catalog') firstChangeAt ??= Date.now();
         const entry = store.history[store.historyIndex];
         entry.changes.movedNodes.forEach((id) => moved.add(id));
         if (call.name === 'tidy_layout' || call.name === 'create_diagram') {
@@ -117,6 +122,7 @@ async function runScenario(sc: Scenario): Promise<StepResult[]> {
     reply = '';
     request = step.say;
     moved.clear();
+    firstChangeAt = null;
     const started = Date.now();
     lastActivity = started;
     client.sendText(step.say);
@@ -135,12 +141,14 @@ async function runScenario(sc: Scenario): Promise<StepResult[]> {
     const passed = step.checks.filter((c) => c.test(after)).map((c) => c.name);
     const failed = step.checks.filter((c) => !c.test(after)).map((c) => c.name);
     const st = stability(before, after, step, moved);
-    results.push({ say: step.say, passed, failed, ...st, calls, reply: reply.trim(), seconds: (Date.now() - started - QUIET_MS) / 1000 });
+    const canvasSeconds = firstChangeAt != null ? (firstChangeAt - started) / 1000 : null;
+    results.push({ say: step.say, passed, failed, ...st, calls, reply: reply.trim(), seconds: (Date.now() - started - QUIET_MS) / 1000, canvasSeconds });
     const mark = failed.length === 0 && st.unstable.length === 0 ? '✓' : '✗';
     console.log(`  ${mark} ${step.say}`);
     console.log(`      checks ${passed.length}/${step.checks.length}` + (failed.length ? ` — failed: ${failed.join('; ')}` : '') +
       ` · stability ${st.stable}/${st.checked}` + (st.unstable.length ? ` — ${st.unstable.join(', ')}` : '') +
-      ` · ${calls.map((c) => c.slice(0, c.indexOf('('))).join(', ') || 'no tool call'}`);
+      ` · ${calls.map((c) => c.slice(0, c.indexOf('('))).join(', ') || 'no tool call'}` +
+      ` · canvas ${canvasSeconds != null ? `${canvasSeconds.toFixed(1)} s` : '–'}`);
   }
   console.log('\n' + describeScene(store.scene).split('\n').map((l) => '    ' + l).join('\n') + '\n');
   client.close();
@@ -157,6 +165,7 @@ async function main() {
   /** Scenarios that could not run (connection, model, timeout), with the reason. */
   const errors: Record<string, string> = {};
   let checks = 0, passedChecks = 0, stable = 0, checked = 0;
+  const canvasTimes: number[] = [];
   const scenarios = SCENARIOS.filter((s) => only == null || s.name.toLowerCase().includes(only.toLowerCase()));
   if (scenarios.length === 0) {
     console.error(`No scenario matches --only ${JSON.stringify(only)}; scenarios: ${SCENARIOS.map((s) => s.name).join(', ')}`);
@@ -172,6 +181,7 @@ async function main() {
         passedChecks += r.passed.length;
         stable += r.stable;
         checked += r.checked;
+        if (r.canvasSeconds != null) canvasTimes.push(r.canvasSeconds);
       }
     } catch (e) {
       errors[sc.name] = e instanceof Error ? e.message : String(e);
@@ -180,7 +190,11 @@ async function main() {
   }
   const failed = Object.keys(errors).length;
   const pct = (a: number, b: number) => (b === 0 ? '–' : `${Math.round((100 * a) / b)}%`);
-  console.log(`Accuracy ${pct(passedChecks, checks)} (${passedChecks}/${checks} checks) · Stability ${pct(stable, checked)} (${stable}/${checked} untouched nodes kept)`);
+  const sorted = [...canvasTimes].sort((a, b) => a - b);
+  const median = sorted.length === 0 ? '–' : `${sorted[Math.floor(sorted.length / 2)].toFixed(1)} s`;
+  const worst = sorted.length === 0 ? '–' : `${sorted[sorted.length - 1].toFixed(1)} s`;
+  console.log(`Accuracy ${pct(passedChecks, checks)} (${passedChecks}/${checks} checks) · Stability ${pct(stable, checked)} (${stable}/${checked} untouched nodes kept)` +
+    ` · Canvas latency median ${median}, worst ${worst}`);
   mkdirSync(new URL('./results/', import.meta.url), { recursive: true });
   const file = new URL(`./results/${new Date().toISOString().replace(/[:.]/g, '-')}.json`, import.meta.url);
   writeFileSync(file, JSON.stringify({ model, report, errors }, null, 2));
