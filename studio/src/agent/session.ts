@@ -42,11 +42,13 @@ export interface VoiceSnapshot {
   reply: string;
   level: number;
   error: string | null;
+  /** The studio server's error code when it refused a token ('signed-out', 'daily-limit', …). */
+  errorCode: string | null;
   /** Seconds from the end of the request to the change on the canvas. */
   lastLatency: number | null;
 }
 
-const IDLE: VoiceSnapshot = { status: 'idle', micOn: false, heard: '', reply: '', level: 0, error: null, lastLatency: null };
+const IDLE: VoiceSnapshot = { status: 'idle', micOn: false, heard: '', reply: '', level: 0, error: null, errorCode: null, lastLatency: null };
 
 export class VoiceAgent {
   snapshot: VoiceSnapshot = IDLE;
@@ -158,7 +160,7 @@ export class VoiceAgent {
       onToolCallCancellation: (ids) => ids.forEach((id) => this.cancelled.add(id)),
       onError: (e) => {
         this.teardown();
-        this.set({ ...IDLE, status: 'error', error: friendlyError(e.message) });
+        this.set({ ...IDLE, status: 'error', error: friendlyError(e.message), errorCode: codeOf(e) });
       },
       onClose: () => {
         if (this.client === client) this.stop();
@@ -172,7 +174,7 @@ export class VoiceAgent {
       if (withMic) await this.enableMic();
     } catch (e) {
       this.teardown();
-      this.set({ ...IDLE, status: 'error', error: friendlyError(e instanceof Error ? e.message : String(e), e) });
+      this.set({ ...IDLE, status: 'error', error: friendlyError(e instanceof Error ? e.message : String(e), e), errorCode: codeOf(e) });
       throw e;
     }
   }
@@ -255,6 +257,11 @@ export class VoiceAgent {
       this.settle();
     });
   }
+}
+
+function codeOf(e: unknown): string | null {
+  const code = (e as { code?: unknown } | null)?.code;
+  return typeof code === 'string' ? code : null;
 }
 
 function friendlyError(message: string, e?: unknown): string {

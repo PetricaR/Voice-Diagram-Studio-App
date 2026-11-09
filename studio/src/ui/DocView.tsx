@@ -81,11 +81,10 @@ function ChapterEditor({ block, chapter, onDone }: {
 const DOCUMENT_REQUEST = 'Document this diagram.';
 
 function EmptyBook({ onAdd }: { onAdd: (kind: 'text' | 'table') => void }) {
-  const { store, agent, liveKey, openSettings, toggleVoice } = useStudio();
+  const { store, agent, ensureCanTalk, toggleVoice } = useStudio();
   const canDocument = hasDiagram(store.scene);
   const writeDocs = () => {
-    if (liveKey === 'missing') openSettings();
-    else agent.sendText(DOCUMENT_REQUEST).catch(() => undefined);
+    if (ensureCanTalk()) agent.sendText(DOCUMENT_REQUEST).catch(() => undefined);
   };
   return (
     <div className="doc-empty">

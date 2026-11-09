@@ -41,6 +41,11 @@ import i_lan from '@material-symbols/svg-400/rounded/lan.svg?raw';
 import i_light_mode from '@material-symbols/svg-400/rounded/light_mode.svg?raw';
 import i_lightbulb from '@material-symbols/svg-400/rounded/lightbulb.svg?raw';
 import i_lock from '@material-symbols/svg-400/rounded/lock.svg?raw';
+import i_image from '@material-symbols/svg-400/rounded/image.svg?raw';
+import i_account_circle from '@material-symbols/svg-400/rounded/account_circle.svg?raw';
+import i_login from '@material-symbols/svg-400/rounded/login.svg?raw';
+import i_logout from '@material-symbols/svg-400/rounded/logout.svg?raw';
+import i_workspace_premium from '@material-symbols/svg-400/rounded/workspace_premium.svg?raw';
 import i_mail from '@material-symbols/svg-400/rounded/mail.svg?raw';
 import i_memory from '@material-symbols/svg-400/rounded/memory.svg?raw';
 import i_mic from '@material-symbols/svg-400/rounded/mic.svg?raw';
@@ -180,6 +185,11 @@ export const ICONS = {
   light_mode: i_light_mode,
   lightbulb: i_lightbulb,
   lock: i_lock,
+  image: i_image,
+  account_circle: i_account_circle,
+  login: i_login,
+  logout: i_logout,
+  workspace_premium: i_workspace_premium,
   mail: i_mail,
   memory: i_memory,
   mic: i_mic,

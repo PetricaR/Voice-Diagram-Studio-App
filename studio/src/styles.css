@@ -382,6 +382,136 @@ button:disabled {
   background: var(--md-outline-variant);
 }
 
+/* ---------- Account (sign-in on a deployment) ---------- */
+
+.sign-in-btn {
+  margin-left: 4px;
+}
+
+.account-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: 4px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+}
+
+.account-btn:hover {
+  background: color-mix(in srgb, var(--md-on-surface) 8%, transparent);
+}
+
+.account-btn:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+.avatar {
+  display: block;
+  flex: none;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar.initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  font-weight: 500;
+}
+
+.account-menu {
+  min-width: 300px;
+}
+
+.account-head,
+.account-plan {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+.account-head span,
+.account-plan span {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.account-head strong {
+  font-weight: 500;
+}
+
+.account-head small,
+.account-plan small {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--md-on-surface-variant);
+  overflow-wrap: anywhere;
+}
+
+.account-plan .icon {
+  color: var(--md-primary);
+}
+
+.account-meter {
+  height: 4px;
+  margin: 4px 16px 8px 48px;
+  border-radius: 2px;
+  background: var(--md-surface-container-highest);
+  overflow: hidden;
+}
+
+.account-meter i {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--md-primary);
+}
+
+.sign-in-dialog {
+  width: min(440px, calc(100vw - 32px));
+}
+
+.sign-in-text,
+.sign-in-note {
+  margin: 0 0 16px;
+  color: var(--md-on-surface-variant);
+  text-wrap: pretty;
+}
+
+.sign-in-note {
+  margin: 16px 0 0;
+  font-size: 12px;
+  line-height: 16px;
+}
+
+.sign-in-button {
+  display: flex;
+  justify-content: center;
+  min-height: 44px;
+}
+
+.sign-in-button[aria-busy='true'] {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.sign-in-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 12px 0 0;
+  color: var(--md-error);
+}
+
 /* ---------- Canvas (React Flow) ---------- */
 
 .react-flow {

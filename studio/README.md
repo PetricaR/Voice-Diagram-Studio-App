@@ -4,7 +4,8 @@ A voice-first diagram editor: describe a diagram, then keep talking to refine it
 request is a precise edit of what is on the canvas, never a redraw. Each diagram has a title
 and its own documentation tab (a book of chapters with a table of contents), diagrams live
 on pages (tabs), and every generated diagram stays in the history panel. Everything exports
-to draw.io; the documentation also exports to Markdown.
+to draw.io; a diagram also exports as a PNG or SVG picture or is copied to the clipboard, and
+the documentation exports to Markdown.
 
 ## Run
 
@@ -157,12 +158,37 @@ In Google AI Studio / Cloud Console:
 
 `./studio.sh check` tests the whole path, including that a used token is refused.
 
-Before you deploy beyond localhost:
+## Sign-in and daily allowances
 
-- Put the token endpoint behind authentication (e.g. Cloud Run with IAP).
-- Set `STUDIO_ALLOWED_HOSTS`.
-- Rate limit by the real client IP, which differs from the connecting IP behind a proxy.
-- Add a Content-Security-Policy.
+Locally, the key's owner is the only user, so the studio needs no sign-in. A deployment does:
+every Live session spends the studio's Gemini key, so only signed-in users get tokens, and only
+as many per day as their plan allows (`server/auth.ts`, `server/usage.ts`, `server/access.ts`).
+
+```text
+page ── Sign in with Google ──▶ Google ID token ── POST /api/auth/google ──▶ server verifies it
+page ◀──── HttpOnly session cookie (signed, 7 days) ────┘
+page ── POST /api/live/token (cookie) ──▶ signed in? sessions left today? ──▶ single-use token
+```
+
+| | |
+| --- | --- |
+| Sign-in | Google Identity Services. The server checks the ID token's signature against Google's keys, its issuer, its audience (the studio's OAuth client, so a token minted for another app is refused), its expiry and that the e-mail is verified. The session is a signed `__Host-` cookie (HttpOnly, Secure, SameSite=Lax); the page never holds a credential. |
+| Allowance | One session = one Live token (a connection of at most 30 minutes; a resumed conversation takes another). Free: 20 a day, Pro: 300, owners unlimited, and 1,500 a day for the whole studio. Counters live in Firestore per UTC day (`studio_usage`), shared by all instances; a TTL deletes old days. A token Google fails to issue is given back. |
+| Fails closed | On Cloud Run, sign-in is required (`STUDIO_AUTH=google`). Without `GOOGLE_CLIENT_ID` and `SESSION_SECRET`, no tokens are issued at all. |
+| Rate limit | Per client IP, from the X-Forwarded-For entry Cloud Run appends (the entries before it are written by the client and ignored); `TRUST_PROXY=2` with a load balancer in front. |
+| Stored | `studio_users/{google id}`: name, e-mail, picture, plan, sign-in times. Diagrams stay in the browser. |
+
+| Variable | Default | |
+| --- | --- | --- |
+| `STUDIO_AUTH` | `google` on Cloud Run, else `off` | `off` disables sign-in |
+| `GOOGLE_CLIENT_ID` | — | OAuth web client id(s), comma-separated |
+| `SESSION_SECRET` | — | ≥ 32 characters, from Secret Manager |
+| `STUDIO_ALLOWED_EMAILS` | everyone | addresses or `@domain`s that may sign in |
+| `STUDIO_OWNER_EMAILS` | — | unlimited sessions |
+| `STUDIO_FREE_DAILY_SESSIONS` / `STUDIO_PRO_DAILY_SESSIONS` / `STUDIO_DAILY_SESSIONS_TOTAL` | 20 / 300 / 1500 | |
+| `STUDIO_USAGE_STORE` | `firestore` on Cloud Run, else `memory` | |
+
+To give someone Pro, set `plan: "pro"` on their `studio_users` document.
 
 ## Layout of the code
 
@@ -173,7 +199,7 @@ src/engine/   scene model, edit operations, placement, ELK layout, routing, hist
 src/agent/    Gemini Live tools, prompt, tool dispatcher, voice session
 src/voice/    Live API WebSocket client and setup, token fetching, microphone and playback
 src/ui/       React + React Flow canvas, Material 3 theme and components
-server/       token API (the only code that reads the API key), Vite plugin, ./studio.sh check
+server/       token API (the only code that reads the API key), sign-in and daily allowances, Vite plugin, ./studio.sh check
 eval/         multi-turn conversations scored against the real Live model
 e2e/          browser tests (Playwright with the installed Chrome)
 ```
@@ -181,8 +207,8 @@ e2e/          browser tests (Playwright with the installed Chrome)
 ## Tests
 
 ```bash
-npm test                         # engine, plus the token API and token authentication (test/security.test.ts)
-npm run dev & npm run e2e        # UI smoke test + voice pipeline against a mock Live server
+npm test                         # engine, token API, Live token authentication, sign-in and allowances (test/auth.test.ts)
+npm run dev & npm run e2e        # UI smoke test, voice pipeline against a mock Live server, sign-in flow
 STUDIO_URL=http://127.0.0.1:5191/ npm run e2e   # against another server, e.g. `vite preview`
 npm run check                    # real API: key → token → session, and the used token is refused
 npm run eval                     # real model: accuracy and stability per conversation step
@@ -194,19 +220,31 @@ the request did not mention them; results are saved in `eval/results/`.
 
 ## Deploy to Cloud Run
 
-`server/index.ts` (and `Dockerfile`) serves the production bundle in `dist/` with a strict `Content-Security-Policy`, mounts `liveTokenMiddleware` at `/api/live/*`, trusts `X-Forwarded-For` for per-client rate limiting on Cloud Run (`K_SERVICE`), and allows `.run.app` origins (or custom domains listed in `STUDIO_ALLOWED_HOSTS`):
+`server/index.ts` (and `Dockerfile`) serves the production bundle in `dist/` with a strict `Content-Security-Policy`, mounts the token and sign-in API at `/api/live/*` and `/api/auth/*`, requires sign-in, and allows `.run.app` origins (or custom domains listed in `STUDIO_ALLOWED_HOSTS`).
 
 ```bash
-gcloud run deploy voice-diagram-studio \
-  --source=. \
-  --region=europe-west4 \
-  --set-secrets="GEMINI_API_KEY=gemini-drawio-api-key:latest"
+./cloudrun.sh setup     # once: service account, session secret, IAM, Firestore TTL
+./cloudrun.sh deploy    # every release
 ```
+
+The OAuth client, once (Google Cloud console → **Google Auth Platform**, same project):
+
+1. **Branding**: app name *Voice Diagram Studio*, support e-mail. **Audience**: *External*, then
+   **Publish app**, so every Google account can sign in (the default scopes, openid, e-mail and
+   profile, need no Google verification).
+2. **Clients → Create client → Web application**. Authorized JavaScript origins: the service URLs
+   (`https://voice-diagram-studio-ukwgwpzepq-ez.a.run.app`,
+   `https://voice-diagram-studio-796921467904.europe-west4.run.app`) and, to try sign-in locally,
+   `http://localhost` and `http://localhost:5173`. No redirect URI and no client secret are used.
+3. `GOOGLE_CLIENT_ID=<client id> STUDIO_OWNER_EMAILS=you@example.com ./cloudrun.sh deploy`
+   (later deploys keep both).
+
+To try sign-in locally: `STUDIO_AUTH=google GOOGLE_CLIENT_ID=… SESSION_SECRET=$(openssl rand -hex 32) npm run dev`, then open http://localhost:5173.
 
 ## Next
 
 - Official AWS, Azure and Kubernetes SVG icon packs alongside the bundled Google Cloud icon set
-- Sequence, ER/class, state and mind map diagrams; Mermaid import; PNG/SVG export
+- Sequence, ER/class, state and mind map diagrams; Mermaid and .drawio import
 
 ## License
 

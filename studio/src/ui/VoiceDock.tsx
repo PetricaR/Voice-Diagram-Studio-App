@@ -45,7 +45,7 @@ function Waveform({ level }: { level: number }) {
 }
 
 export function VoiceDock({ focusRequest }: { focusRequest: number }) {
-  const { agent, toggleVoice, openSettings } = useStudio();
+  const { agent, toggleVoice, openSettings, requestSignIn, ensureCanTalk } = useStudio();
   const v = useVoice(agent);
   const [text, setText] = useState('');
   const [focused, setFocused] = useState(false);
@@ -78,11 +78,16 @@ export function VoiceDock({ focusRequest }: { focusRequest: number }) {
   const connecting = v.status === 'connecting';
   const isError = v.status === 'error';
   const keyProblem = isError && /key/i.test(v.error ?? '');
+  const signInProblem = isError && v.errorCode === 'signed-out';
+  // Trying again cannot help before tomorrow, or before the server is set up
+  const final = isError && (v.errorCode === 'daily-limit' || v.errorCode === 'busy' || v.errorCode === 'auth-not-configured');
   const hasText = text.trim() !== '';
 
   const send = () => {
     const t = text.trim();
     if (t === '') return;
+    // The text stays in the field while the user signs in
+    if (!session && !ensureCanTalk()) return;
     setText('');
     agent.sendText(t).catch(() => undefined);
   };
@@ -118,9 +123,11 @@ export function VoiceDock({ focusRequest }: { focusRequest: number }) {
             )}
             {isError && (
               <>
-                <button type="button" className="text-btn small" onClick={keyProblem ? openSettings : toggleVoice}>
-                  {keyProblem ? 'Settings' : 'Try again'}
-                </button>
+                {!final && (
+                  <button type="button" className="text-btn small" onClick={signInProblem ? requestSignIn : keyProblem ? openSettings : toggleVoice}>
+                    {signInProblem ? 'Sign in' : keyProblem ? 'Settings' : 'Try again'}
+                  </button>
+                )}
                 <button type="button" className="icon-btn dock-dismiss" onClick={() => agent.stop()} aria-label="Dismiss" data-tooltip="Dismiss">
                   <Icon name="close" size={18} />
                 </button>

@@ -306,6 +306,14 @@ export function download(filename: string, content: string, type: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+/** Saves a data: URL (a picture) under `filename`. */
+export function downloadDataUrl(filename: string, url: string) {
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+}
+
 export function fileName(scene: Scene, ext: string): string {
   const base = (scene.title || 'diagram').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase();
   return `${base || 'diagram'}.${ext}`;

@@ -2,9 +2,11 @@ import { BLUEPRINTS, type Blueprint } from './blueprints';
 import { Icon, useStudio } from './context';
 
 export function EmptyState() {
-  const { store, agent, liveKey, toggleVoice } = useStudio();
+  const { store, agent, liveKey, auth, toggleVoice } = useStudio();
+  // Signed out (or no key): the blueprint's prepared diagram is drawn without Gemini
+  const canAskGemini = liveKey === 'configured' && (!auth.required || (auth.configured && auth.account != null));
   const launchBlueprint = (b: Blueprint) => {
-    if (liveKey === 'configured') {
+    if (canAskGemini) {
       agent.sendText(b.prompt).catch(() => undefined);
     } else {
       store.create(b.diagram, {

@@ -2,7 +2,7 @@ import { createContext, useContext, useSyncExternalStore } from 'react';
 import type { VoiceAgent, VoiceSnapshot } from '../agent/session';
 import type { DiagramStore } from '../engine/store';
 import type { Workspace } from '../engine/workspace';
-import type { KeyStatus } from '../voice/liveToken';
+import type { AuthStatus, KeyStatus } from '../voice/liveToken';
 import { ICONS, type IconName } from './icons';
 import type { Settings } from './settings';
 
@@ -20,6 +20,12 @@ export interface Studio {
   openSettings: () => void;
   /** Starts or stops the voice session. */
   toggleVoice: () => void;
+  /** Whether the studio server requires sign-in, and who is signed in. */
+  auth: AuthStatus;
+  requestSignIn: () => void;
+  signOut: () => void;
+  /** True when Gemini can be asked now; otherwise it asks for sign-in or a key and returns false. */
+  ensureCanTalk: () => boolean;
 }
 
 export const StudioContext = createContext<Studio | null>(null);

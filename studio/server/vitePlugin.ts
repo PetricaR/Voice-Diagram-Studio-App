@@ -7,6 +7,7 @@
  */
 import { join } from 'node:path';
 import { runnerImport, type Logger, type Plugin } from 'vite';
+import { accessFromEnv, type Access } from './access.ts';
 import { readApiKey } from './apiKey.ts';
 import { liveTokenMiddleware, type AgentConfig } from './liveToken.ts';
 
@@ -14,10 +15,13 @@ const CONFIG_MODULE = 'src/agent/liveConfig.ts';
 
 const list = (value: string | undefined) => value?.split(',').map((s) => s.trim()).filter(Boolean);
 
-function middleware(root: string, logger: Logger, loadConfig: () => Promise<AgentConfig>) {
+async function middleware(root: string, logger: Logger, loadConfig: () => Promise<AgentConfig>) {
   const warn = (message: string) => logger.warn(message, { timestamp: true });
+  // Off unless STUDIO_AUTH=google: locally the key's owner is the only user
+  const access: Access = await accessFromEnv(process.env, { onCloudRun: false, log: warn });
   let key = '';
   return liveTokenMiddleware({
+    ...access,
     // Read again until there is one, so `./studio.sh key` works without a restart
     getApiKey: () => key || (key = readApiKey(root, warn)),
     onKeyRejected: () => {
@@ -35,7 +39,8 @@ export function liveTokenPlugin(): Plugin {
     name: 'studio:live-token',
     configureServer(server) {
       const { root, logger } = server.config;
-      server.middlewares.use(middleware(root, logger, () => server.ssrLoadModule(`/${CONFIG_MODULE}`) as Promise<AgentConfig>));
+      return middleware(root, logger, () => server.ssrLoadModule(`/${CONFIG_MODULE}`) as Promise<AgentConfig>)
+        .then((m) => { server.middlewares.use(m); });
     },
     configurePreviewServer(server) {
       const { root, logger } = server.config;
@@ -46,7 +51,7 @@ export function liveTokenPlugin(): Plugin {
           config = undefined;
           throw e;
         });
-      server.middlewares.use(middleware(root, logger, load));
+      return middleware(root, logger, load).then((m) => { server.middlewares.use(m); });
     },
   };
 }

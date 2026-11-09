@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { isBlankScene } from '../engine/types';
+import { AccountMenu } from './AccountMenu';
+import { hasDiagram, isBlankScene } from '../engine/types';
 import { bookToMarkdown } from '../engine/book';
 import { addChapter } from './chapters';
 import { Icon, IconButton, useStoreRevision, useStudio, useWorkspaceRevision } from './context';
-import { download, fileName, pagesFromJson, pagesToJson, toDrawio } from './export';
+import { dataUrlToBlob, exportDiagramImage, type ImageFormat } from './canvas/imageExport';
+import { download, downloadDataUrl, fileName, pagesFromJson, pagesToJson, toDrawio } from './export';
 
 const TYPE_LABEL: Record<string, string> = {
   architecture: 'Architecture', flowchart: 'Flowchart', c4: 'C4', network: 'Network', generic: 'Diagram',
@@ -23,6 +25,25 @@ export function TopBar({ panelOpen, togglePanel }: { panelOpen: boolean; toggleP
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => setTitle(scene.title), [scene.title]);
+
+  const saveImage = (format: ImageFormat) => {
+    setMenu(false);
+    exportDiagramImage(format)
+      .then((url) => downloadDataUrl(fileName(scene, format), url))
+      .catch((e: unknown) => notify(e instanceof Error ? e.message : String(e)));
+  };
+  // The clipboard write starts within the click, with the picture still on its way (Safari needs that)
+  const copyImage = () => {
+    setMenu(false);
+    if (typeof ClipboardItem === 'undefined' || !navigator.clipboard?.write) {
+      notify('This browser cannot copy pictures; export a PNG instead.');
+      return;
+    }
+    const png = exportDiagramImage('png').then(dataUrlToBlob);
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': png })])
+      .then(() => notify('Copied the diagram as a picture — paste it into a document or a chat.'))
+      .catch((e: unknown) => notify(`The picture could not be copied (${e instanceof Error ? e.message : String(e)}).`));
+  };
   useEffect(() => {
     if (!menu) return;
     const close = (e: MouseEvent) => {
@@ -115,6 +136,16 @@ export function TopBar({ panelOpen, togglePanel }: { panelOpen: boolean; toggleP
                   <Icon name="account_tree" size={20} /><span>draw.io file · this page<small>Only “{workspace.pageTitle(workspace.active)}”</small></span>
                 </button>
               )}
+              <button type="button" role="menuitem" disabled={!hasDiagram(scene)} onClick={() => saveImage('png')}>
+                <Icon name="image" size={20} /><span>PNG image<small>This page’s diagram, sharp on any screen</small></span>
+              </button>
+              <button type="button" role="menuitem" disabled={!hasDiagram(scene)} onClick={() => saveImage('svg')}>
+                <Icon name="image" size={20} /><span>SVG image<small>Scales without blur, for the web</small></span>
+              </button>
+              <button type="button" role="menuitem" disabled={!hasDiagram(scene)} onClick={copyImage}>
+                <Icon name="content_copy" size={20} /><span>Copy as image<small>Paste into Docs, Slides or a chat</small></span>
+              </button>
+              <div className="menu-divider" />
               <button type="button" role="menuitem" disabled={chapters === 0} onClick={() => {
                 const name = fileName(scene, 'md').replace(/\.md$/, '-documentation.md');
                 download(name, bookToMarkdown(scene), 'text/markdown');
@@ -158,6 +189,7 @@ export function TopBar({ panelOpen, togglePanel }: { panelOpen: boolean; toggleP
         </div>
         <IconButton icon={panelOpen ? 'right_panel_close' : 'history'} label={panelOpen ? 'Hide history' : 'History'} selected={panelOpen} onClick={togglePanel} />
         <IconButton icon="settings" label="Settings" onClick={openSettings} />
+        <AccountMenu />
       </div>
     </header>
   );

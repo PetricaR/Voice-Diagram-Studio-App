@@ -114,10 +114,10 @@ describe('token API', () => {
   it('reports whether a key is configured, never the key', async () => {
     setup();
     const yes = await call('GET', '/api/live/status');
-    expect(yes.body).toEqual({ configured: true });
+    expect(yes.body).toEqual({ configured: true, auth: { required: false } });
     expect(yes.text).not.toContain(KEY);
     setup({ getApiKey: () => '' });
-    expect((await call('GET', '/api/live/status')).body).toEqual({ configured: false });
+    expect((await call('GET', '/api/live/status')).body).toEqual({ configured: false, auth: { required: false } });
     const r = await askToken();
     expect(r.status).toBe(503);
     expect(r.body.error).toBe('no-key');
@@ -179,11 +179,19 @@ describe('token API', () => {
     expect(upstream).toHaveBeenCalledTimes(4);
   });
 
-  it('rate limits by X-Forwarded-For when trustProxy is enabled', async () => {
+  it('rate limits by the X-Forwarded-For entry of the trusted proxy, not by what the client wrote', async () => {
     setup({ rateLimit: 1, trustProxy: true });
-    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' })).status).toBe(200);
-    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' })).status).toBe(429);
-    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.11, 10.0.0.1' })).status).toBe(200);
+    // Cloud Run appends the address it saw; the entries before it come from the client
+    expect((await askToken(undefined, { 'x-forwarded-for': '198.51.100.1, 203.0.113.10' })).status).toBe(200);
+    expect((await askToken(undefined, { 'x-forwarded-for': '198.51.100.2, 203.0.113.10' })).status).toBe(429);
+    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.10' })).status).toBe(429);
+    expect((await askToken(undefined, { 'x-forwarded-for': '198.51.100.1, 203.0.113.11' })).status).toBe(200);
+  });
+
+  it('counts two trusted proxies from the end', async () => {
+    setup({ rateLimit: 1, trustProxy: 2 });
+    expect((await askToken(undefined, { 'x-forwarded-for': 'spoofed, 203.0.113.10, 10.0.0.1' })).status).toBe(200);
+    expect((await askToken(undefined, { 'x-forwarded-for': 'other, 203.0.113.10, 10.0.0.2' })).status).toBe(429);
   });
 
   it('serves static files with Content-Security-Policy in createStudioServer', async () => {
@@ -198,7 +206,7 @@ describe('token API', () => {
 
       const status = await fetch(`http://127.0.0.1:${prodPort}/api/live/status`);
       expect(status.status).toBe(200);
-      expect(await status.json()).toEqual({ configured: true });
+      expect(await status.json()).toEqual({ configured: true, auth: { required: false } });
     } finally {
       await new Promise<void>((r) => prod.close(() => r()));
     }

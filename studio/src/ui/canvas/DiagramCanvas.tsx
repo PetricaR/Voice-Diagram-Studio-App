@@ -5,7 +5,7 @@
  * the eye can follow them; new and changed elements are briefly highlighted.
  */
 import {
-  Background, BackgroundVariant, ConnectionMode, MiniMap, ReactFlow, useReactFlow,
+  Background, BackgroundVariant, ConnectionMode, MiniMap, ReactFlow, useReactFlow, useStoreApi,
   type Connection, type Edge, type Node, type NodeChange, type OnDelete, type OnNodeDrag,
 } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +17,7 @@ import { useStoreRevision, useStudio } from '../context';
 import { titleOrigin } from '../export';
 import { kindColor } from '../theme';
 import { FIT_OPTIONS } from './fit';
+import { captureViewport, registerImageExporter } from './imageExport';
 import { EdgeMarkers, FloatingEdge, type FloatingEdgeType } from './FloatingEdge';
 import { GroupNode, type GroupNodeType } from './GroupNode';
 import { ShapeNode, type Highlight, type ShapeNodeType } from './ShapeNode';
@@ -107,6 +108,9 @@ export function DiagramCanvas({ onEmptyChange, viewport, onLeave, minimap = fals
   const scene = store.scene;
   const selection = store.selection;
   const rf = useReactFlow();
+  const flowStore = useStoreApi();
+  // While a picture is taken: no selection, toolbar or change highlights
+  const [exporting, setExporting] = useState(false);
 
   const [drag, setDrag] = useState<PosMap>(new Map());
   const dragStart = useRef<{ group?: string; origin: Pos; members: PosMap } | null>(null);
@@ -261,8 +265,8 @@ export function DiagramCanvas({ onEmptyChange, viewport, onLeave, minimap = fals
         id: G + g.id,
         type: 'group',
         position: { x: b.x, y: b.y },
-        data: { group: g, w: b.w, h: b.h, depth, highlight: highlight.groups.get(g.id) },
-        selected: selectedGroups.includes(g.id),
+        data: { group: g, w: b.w, h: b.h, depth, highlight: exporting ? undefined : highlight.groups.get(g.id) },
+        selected: !exporting && selectedGroups.includes(g.id),
         zIndex: depth,
         // Known sizes: React Flow keeps the nodes visible instead of re-measuring
         width: b.w,
@@ -279,10 +283,10 @@ export function DiagramCanvas({ onEmptyChange, viewport, onLeave, minimap = fals
         type: 'shape',
         position: { x: n.x, y: n.y },
         data: {
-          node: n, highlight: highlight.nodes.get(n.id), editing: editing === n.id, single,
+          node: n, highlight: exporting ? undefined : highlight.nodes.get(n.id), editing: !exporting && editing === n.id, single,
           onEditLabel, onStartEdit: setEditing, onColor, onDelete: onDeleteNode,
         },
-        selected: selection.includes(n.id),
+        selected: !exporting && selection.includes(n.id),
         zIndex: 100,
         width: n.w,
         height: n.h,
@@ -312,7 +316,7 @@ export function DiagramCanvas({ onEmptyChange, viewport, onLeave, minimap = fals
     }
     return result;
   }, [scene, sceneWithShown, shownGroupBounds, selection, selectedGroups, highlight, editing, onEditLabel, onColor, onDeleteNode,
-    onRenameTitle]);
+    onRenameTitle, exporting]);
 
   // Edges are routed around all nodes and group borders at their shown positions
   const edges = useMemo(() => {
@@ -357,13 +361,32 @@ export function DiagramCanvas({ onEmptyChange, viewport, onLeave, minimap = fals
         source: e.from,
         target: e.to,
         type: 'floating',
-        data: { edge: e, route, highlight: highlight.edges.has(e.id) },
-        selected: selectedEdges.includes(e.id),
+        data: { edge: e, route, highlight: !exporting && highlight.edges.has(e.id) },
+        selected: !exporting && selectedEdges.includes(e.id),
         zIndex: 50,
       });
     }
     return result;
-  }, [scene, sceneWithShown, shownGroupBounds, highlight, selectedEdges]);
+  }, [scene, sceneWithShown, shownGroupBounds, highlight, selectedEdges, exporting]);
+
+  // The canvas on screen takes the pictures for Export → PNG / SVG / Copy
+  useEffect(() => registerImageExporter(async (format) => {
+    setExporting(true);
+    try {
+      // Two frames: React renders without the selection, then the browser paints it
+      await new Promise<void>((r) => requestAnimationFrame(() => requestAnimationFrame(() => r())));
+      const viewportEl = flowStore.getState().domNode?.querySelector<HTMLElement>('.react-flow__viewport');
+      const drawn = rf.getNodes().filter((n) => !n.hidden && n.width != null && n.height != null);
+      if (viewportEl == null || drawn.length === 0) throw new Error('There is no diagram on this page to export.');
+      const x = Math.min(...drawn.map((n) => n.position.x));
+      const y = Math.min(...drawn.map((n) => n.position.y));
+      const w = Math.max(...drawn.map((n) => n.position.x + (n.width ?? 0))) - x;
+      const h = Math.max(...drawn.map((n) => n.position.y + (n.height ?? 0))) - y;
+      return await captureViewport(viewportEl, { x, y, w, h }, format);
+    } finally {
+      setExporting(false);
+    }
+  }), [rf, flowStore]);
 
   const onNodesChange = useCallback((changes: NodeChange[]) => {
     let sel: Set<string> | null = null;

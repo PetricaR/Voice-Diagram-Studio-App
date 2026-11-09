@@ -3,8 +3,10 @@
  * asks it for an ephemeral token before every Live API connection
  * (https://ai.google.dev/gemini-api/docs/ephemeral-tokens):
  *
- *   GET  /api/live/status  → { configured }                (never the key itself)
- *   POST /api/live/token   { model, voice?, thinkingLevel? } → { token, expireTime }
+ *   GET  /api/live/status  → { configured, auth }          (never the key itself)
+ *   POST /api/live/token   { model, voice?, thinkingLevel? } → { token, expireTime, account? }
+ *   POST /api/auth/google  { credential } → { account }       (see server/auth.ts)
+ *   POST /api/auth/logout
  *
  * Every token
  *   - starts at most one session (uses: 1), within 60 seconds of being issued,
@@ -15,9 +17,14 @@
  * name (against cross-site requests and DNS rebinding), accepts small JSON
  * bodies with allow-listed values, and is rate limited per client. The key is
  * sent to Google in a header, never in a URL, and never appears in a response.
+ *
+ * On a deployment (`requireSignIn`), only signed-in users get tokens, within a
+ * daily allowance per user and for the whole studio (server/usage.ts).
  */
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import type * as LiveConfig from '../src/agent/liveConfig.ts';
+import { AuthError, type Auth } from './auth.ts';
+import type { Usage } from './usage.ts';
 
 /** What the server needs from src/agent/liveConfig.ts. */
 export type AgentConfig = Pick<typeof LiveConfig, 'LIVE_MODELS' | 'VOICES' | 'THINKING_LEVELS' | 'agentSetup'>;
@@ -28,6 +35,8 @@ export const NEW_SESSION_MS = 60_000;
 /** Setup fields a token is locked to; the rest (resumption handle, transcription, voice detection) stays with the page. */
 const LOCKED_FIELDS = ['model', 'generationConfig', 'systemInstruction', 'tools'];
 const MAX_BODY_BYTES = 2048;
+/** A Google ID token is 1–2 KB. */
+const MAX_SIGN_IN_BYTES = 8192;
 const LOOPBACK_HOSTS = ['localhost', '127.0.0.1', '[::1]'];
 
 export class TokenError extends Error {
@@ -105,10 +114,19 @@ export interface LiveTokenOptions {
   models?: readonly string[];
   /** Host names allowed besides loopback, e.g. the domain of a deployment (or a ".run.app" suffix). */
   allowedHosts?: readonly string[];
-  /** Trust X-Forwarded-For for per-client rate limiting when behind a reverse proxy (e.g. Cloud Run). */
-  trustProxy?: boolean;
+  /**
+   * Behind a reverse proxy (e.g. Cloud Run), rate limit by X-Forwarded-For: the
+   * number of trusted proxies in front of the server (true = 1). Each proxy appends
+   * the address it saw, so the client's own address is that many entries from the
+   * end; anything before it was written by the client and is ignored.
+   */
+  trustProxy?: boolean | number;
   /** Tokens per client per minute (default 10). */
   rateLimit?: number;
+  /** Only signed-in users get tokens (deployments). Without `auth` and `usage`, no one does. */
+  requireSignIn?: boolean;
+  auth?: Auth;
+  usage?: Usage;
   fetch?: typeof fetch;
   log?: (message: string) => void;
   now?: () => number;
@@ -123,45 +141,99 @@ export function liveTokenMiddleware(o: LiveTokenOptions) {
   const limiter = new RateLimiter(o.rateLimit ?? 10, 60_000, now);
   const log = o.log ?? ((m: string) => console.warn(m));
 
+  const NOT_CONFIGURED = { error: 'auth-not-configured', message: 'Sign-in is not set up on this studio server yet, so voice is off.' };
+
+  /** Rate limited (429 sent) when it returns false. */
+  function admit(req: IncomingMessage, res: ServerResponse, bucket: string, message: string): boolean {
+    const wait = limiter.take(`${bucket}:${clientAddress(req, o.trustProxy)}`);
+    if (wait <= 0) return true;
+    send(res, 429, { error: 'rate-limit', message }, { 'Retry-After': String(Math.ceil(wait / 1000)) });
+    return false;
+  }
+
+  async function authStatus(req: IncomingMessage) {
+    if (!o.requireSignIn) return { required: false };
+    if (!o.auth || !o.usage) return { required: true, configured: false };
+    const user = await o.auth.userOf(req);
+    return {
+      required: true,
+      configured: true,
+      clientId: o.auth.clientId,
+      freeDaily: o.usage.limits.free,
+      account: user ? await o.usage.account(user) : null,
+    };
+  }
+
+  async function signIn(req: IncomingMessage, res: ServerResponse) {
+    if (req.method !== 'POST') return send(res, 405, { error: 'method', message: 'Use POST.' }, { Allow: 'POST' });
+    if (!o.requireSignIn) return send(res, 404, { error: 'not-found', message: 'This studio server does not use sign-in.' });
+    if (!o.auth || !o.usage) return send(res, 503, NOT_CONFIGURED);
+    const body = await readJson(req, res, MAX_SIGN_IN_BYTES);
+    if (body === undefined) return;
+    if (!admit(req, res, 'sign-in', 'Too many sign-in attempts; wait a moment.')) return;
+    const credential = (body as { credential?: unknown } | null)?.credential;
+    try {
+      const user = await o.auth.verifyGoogleCredential(credential as string);
+      const account = await o.usage.signIn(user);
+      return send(res, 200, { account }, { 'Set-Cookie': await o.auth.sessionCookie(user) });
+    } catch (e) {
+      if (!(e instanceof AuthError)) throw e;
+      return send(res, e.status, { error: e.code, message: e.message });
+    }
+  }
+
   async function handle(req: IncomingMessage, res: ServerResponse, path: string) {
     const denied = checkRequestOrigin(req, hosts);
     if (denied) return send(res, 403, { error: 'forbidden', message: denied });
 
     if (path === '/api/live/status') {
       if (req.method !== 'GET' && req.method !== 'HEAD') return send(res, 405, { error: 'method', message: 'Use GET.' }, { Allow: 'GET, HEAD' });
-      return send(res, 200, { configured: o.getApiKey() !== '' });
+      return send(res, 200, { configured: o.getApiKey() !== '', auth: await authStatus(req) });
+    }
+    if (path === '/api/auth/google') return signIn(req, res);
+    if (path === '/api/auth/logout') {
+      if (req.method !== 'POST') return send(res, 405, { error: 'method', message: 'Use POST.' }, { Allow: 'POST' });
+      return send(res, 200, { ok: true }, o.auth ? { 'Set-Cookie': o.auth.clearCookie() } : {});
     }
     if (path !== '/api/live/token') return send(res, 404, { error: 'not-found', message: 'Not found.' });
     if (req.method !== 'POST') return send(res, 405, { error: 'method', message: 'Use POST.' }, { Allow: 'POST' });
-    if (!/^application\/json\s*(;|$)/i.test(req.headers['content-type'] ?? '')) {
-      return send(res, 415, { error: 'content-type', message: 'Send JSON (Content-Type: application/json).' });
-    }
-    const raw = await readBody(req, MAX_BODY_BYTES);
-    if (raw == null) return send(res, 413, { error: 'too-large', message: 'The request is too large.' });
-    let request: unknown;
-    try {
-      request = JSON.parse(raw);
-    } catch {
-      return send(res, 400, { error: 'bad-request', message: 'The request is not valid JSON.' });
-    }
+    const request = await readJson(req, res, MAX_BODY_BYTES);
+    if (request === undefined) return;
     const config = await o.loadConfig();
     const invalid = validate(request, config, o.models ?? config.LIVE_MODELS);
     if (invalid) return send(res, 400, { error: 'bad-request', message: invalid });
 
-    const wait = limiter.take(clientAddress(req, o.trustProxy));
-    if (wait > 0) {
-      return send(res, 429, { error: 'rate-limit', message: 'Too many Live sessions were started; wait a moment.' },
-        { 'Retry-After': String(Math.ceil(wait / 1000)) });
-    }
+    if (!admit(req, res, 'token', 'Too many Live sessions were started; wait a moment.')) return;
     const apiKey = o.getApiKey();
     if (!apiKey) {
       return send(res, 503, { error: 'no-key', message: 'No Gemini API key on the studio server. Run ./studio.sh key in a terminal, then try again.' });
     }
+
+    let reservation: Awaited<ReturnType<Usage['reserve']>> | null = null;
+    if (o.requireSignIn) {
+      if (!o.auth || !o.usage) return send(res, 503, NOT_CONFIGURED);
+      const user = await o.auth.userOf(req);
+      if (!user) return send(res, 401, { error: 'signed-out', message: 'Sign in with Google to talk to the studio.' });
+      reservation = await o.usage.reserve(user);
+      if (!reservation.ok) {
+        if (reservation.reason === 'user') {
+          return send(res, 429, {
+            error: 'daily-limit',
+            message: `You have used today's ${reservation.account.limit} voice sessions. They renew at midnight UTC.`,
+            account: reservation.account,
+          });
+        }
+        log('[live-token] the daily session limit of the whole studio was reached');
+        return send(res, 503, { error: 'busy', message: 'The studio has reached its capacity for today; try again tomorrow.' });
+      }
+    }
+
     const { model, voice, thinkingLevel } = request as { model: string; voice?: string; thinkingLevel?: string };
     try {
       const token = await createLiveToken(apiKey, config.agentSetup({ model, voice, thinkingLevel }), { fetch: o.fetch, now: now() });
-      return send(res, 200, token);
+      return send(res, 200, reservation?.ok ? { ...token, account: reservation.account } : token);
     } catch (e) {
+      if (reservation?.ok) await reservation.release().catch(() => undefined);
       if (!(e instanceof TokenError)) throw e;
       if (e.code === 'key-rejected') o.onKeyRejected?.();
       log(`[live-token] ${e.message}`);
@@ -171,7 +243,7 @@ export function liveTokenMiddleware(o: LiveTokenOptions) {
 
   return (req: IncomingMessage, res: ServerResponse, next: Next) => {
     const path = (req.url ?? '').split('?')[0];
-    if (!path.startsWith('/api/live/')) {
+    if (!path.startsWith('/api/live/') && !path.startsWith('/api/auth/')) {
       next();
       return;
     }
@@ -190,12 +262,18 @@ function isAllowedHost(hostname: string, hosts: Set<string>): boolean {
   return false;
 }
 
-function clientAddress(req: IncomingMessage, trustProxy?: boolean): string {
-  if (trustProxy) {
+/**
+ * The client's address. Behind `trustProxy` proxies it is the entry that the
+ * outermost trusted proxy appended to X-Forwarded-For; the entries before it
+ * come from the client, which can write anything there.
+ */
+export function clientAddress(req: IncomingMessage, trustProxy?: boolean | number): string {
+  const hops = trustProxy === true ? 1 : typeof trustProxy === 'number' ? trustProxy : 0;
+  if (hops > 0) {
     const xff = req.headers['x-forwarded-for'];
-    const raw = Array.isArray(xff) ? xff[0] : xff;
-    const first = raw?.split(',')[0]?.trim();
-    if (first) return first;
+    const entries = (Array.isArray(xff) ? xff.join(',') : xff ?? '').split(',').map((e) => e.trim()).filter(Boolean);
+    const entry = entries[entries.length - hops];
+    if (entry) return entry;
   }
   return req.socket.remoteAddress ?? 'unknown';
 }
@@ -239,6 +317,25 @@ function validate(r: unknown, config: AgentConfig, models: readonly string[]): s
     return 'Unknown thinking level.';
   }
   return null;
+}
+
+/** The parsed JSON body; undefined when an error response was sent instead. */
+async function readJson(req: IncomingMessage, res: ServerResponse, limit: number): Promise<unknown> {
+  if (!/^application\/json\s*(;|$)/i.test(req.headers['content-type'] ?? '')) {
+    send(res, 415, { error: 'content-type', message: 'Send JSON (Content-Type: application/json).' });
+    return undefined;
+  }
+  const raw = await readBody(req, limit);
+  if (raw == null) {
+    send(res, 413, { error: 'too-large', message: 'The request is too large.' });
+    return undefined;
+  }
+  try {
+    return JSON.parse(raw);
+  } catch {
+    send(res, 400, { error: 'bad-request', message: 'The request is not valid JSON.' });
+    return undefined;
+  }
 }
 
 /** The body as text, or null when it is larger than `limit` bytes. */

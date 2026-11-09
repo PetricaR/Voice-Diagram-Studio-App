@@ -2,7 +2,7 @@ import { ReactFlowProvider } from '@xyflow/react';
 import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
 import { VoiceAgent } from '../agent/session';
 import { Workspace, type LibraryEntry, type SavedWorkspace } from '../engine/workspace';
-import { fetchKeyStatus, type KeyStatus } from '../voice/liveToken';
+import { fetchServerStatus, onAccountChange, signOut as serverSignOut, type ServerStatus } from '../voice/liveToken';
 import { DiagramCanvas } from './canvas/DiagramCanvas';
 import { StudioContext, useStudio, type Studio } from './context';
 import { DocView } from './DocView';
@@ -11,6 +11,8 @@ import { download, fileName, fromJson, normalizeScene, pagesToJson } from './exp
 import { PageTabs } from './PageTabs';
 import { loadSettings, saveSettings, type Settings } from './settings';
 import { SettingsDialog } from './SettingsDialog';
+import { SignInDialog } from './SignInDialog';
+import { forgetGoogleAccount } from './googleSignIn';
 import { SidePanel, type PanelTab } from './SidePanel';
 import { applyTheme } from './theme';
 import { TopBar } from './TopBar';
@@ -217,14 +219,50 @@ export function App() {
     }
   }, [workspace, agent]);
 
-  // The key stays on the studio server; the page only learns whether there is one
-  const [liveKey, setLiveKey] = useState<KeyStatus>('unknown');
-  const liveKeyRef = useRef(liveKey);
-  liveKeyRef.current = liveKey;
+  // The key stays on the studio server; the page only learns whether there is one,
+  // and, on a deployment, who is signed in and how many sessions are left today
+  const [server, setServer] = useState<ServerStatus>({ key: 'unknown', auth: { required: false } });
+  const serverRef = useRef(server);
+  serverRef.current = server;
+  const liveKey = server.key;
+  const auth = server.auth;
   const refreshLiveKey = useCallback(() => {
-    fetchKeyStatus().then(setLiveKey).catch(() => undefined);
+    fetchServerStatus().then(setServer).catch(() => undefined);
   }, []);
   useEffect(refreshLiveKey, [refreshLiveKey]);
+  useEffect(() => {
+    onAccountChange((account) => setServer((s) => (s.auth.required && s.auth.configured && s.auth.account
+      ? { ...s, auth: { ...s.auth, account } }
+      : s)));
+    return () => onAccountChange(null);
+  }, []);
+  const [signInOpen, setSignInOpen] = useState(false);
+  const requestSignIn = useCallback(() => setSignInOpen(true), []);
+  const closeSignIn = useCallback(() => setSignInOpen(false), []);
+  /** True when Gemini can be asked now; otherwise it asks for what is missing (sign-in or a key) and returns false. */
+  const ensureCanTalk = useCallback((): boolean => {
+    const s = serverRef.current;
+    if (s.auth.required && !(s.auth.configured && s.auth.account)) {
+      setSignInOpen(true);
+      return false;
+    }
+    if (s.key === 'missing') {
+      setSettingsOpen(true);
+      notify('Add a Gemini API key to the studio server to start talking.');
+      return false;
+    }
+    return true;
+  }, [notify]);
+  const signOut = useCallback(() => {
+    agent.stop();
+    serverSignOut()
+      .then(() => {
+        forgetGoogleAccount();
+        notify('Signed out');
+      })
+      .catch((e: unknown) => notify(e instanceof Error ? e.message : String(e)))
+      .finally(refreshLiveKey);
+  }, [agent, notify, refreshLiveKey]);
 
   const setSettings = useCallback((s: Settings) => {
     const restart = agent.active && (s.model !== settingsRef.current.model ||
@@ -242,22 +280,27 @@ export function App() {
       agent.stop();
       return;
     }
-    if (liveKeyRef.current === 'missing') {
-      setSettingsOpen(true);
-      notify('Add a Gemini API key to the studio server to start talking.');
-      return;
-    }
+    if (!ensureCanTalk()) return;
     agent.start(true).catch(() => undefined);
-  }, [agent, notify]);
+  }, [agent, ensureCanTalk]);
 
-  // Errors of the voice session are shown in the dock (with Settings or Try again);
-  // a key problem also re-checks whether the server has a key
+  // Errors of the voice session are shown in the dock (with Settings, Sign in or Try again);
+  // a key or sign-in problem also re-checks the server, and an expired session asks to sign in again
   useEffect(() => {
     let last: string | null = null;
     return agent.subscribe(() => {
       const s = agent.snapshot;
       const error = s.status === 'error' ? s.error : null;
-      if (error && error !== last && /key/i.test(error)) refreshLiveKey();
+      if (error && error !== last) {
+        if (/key/i.test(error) || s.errorCode === 'signed-out' || s.errorCode === 'daily-limit' || s.errorCode === 'auth-not-configured') {
+          refreshLiveKey();
+        }
+        if (s.errorCode === 'signed-out') {
+          // The session cookie expired or was revoked: signed out until the user signs in again
+          setServer((v) => (v.auth.required && v.auth.configured ? { ...v, auth: { ...v.auth, account: null } } : v));
+          setSignInOpen(true);
+        }
+      }
       last = error;
     });
   }, [agent, refreshLiveKey]);
@@ -265,7 +308,8 @@ export function App() {
   const studio: Studio = useMemo(() => ({
     workspace, store, agent, settings, setSettings, liveKey, refreshLiveKey, notify, toggleVoice,
     openSettings: () => setSettingsOpen(true),
-  }), [workspace, store, agent, settings, setSettings, liveKey, refreshLiveKey, notify, toggleVoice]);
+    auth, requestSignIn, signOut, ensureCanTalk,
+  }), [workspace, store, agent, settings, setSettings, liveKey, refreshLiveKey, notify, toggleVoice, auth, requestSignIn, signOut, ensureCanTalk]);
 
   const togglePanel = useCallback(() => updatePrefs({ panelOpen: !prefs.panelOpen }), [prefs.panelOpen, updatePrefs]);
 
@@ -299,6 +343,7 @@ export function App() {
           </main>
           <Shortcuts focusComposer={focusComposer} />
           <SettingsDialog open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+          <SignInDialog open={signInOpen} onClose={closeSignIn} />
         </div>
       </ReactFlowProvider>
     </StudioContext.Provider>
