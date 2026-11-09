@@ -178,11 +178,10 @@ start_app() {
 }
 
 run_e2e() {
-	local pid=""
 	if ! server_up; then
 		npx vite --host 127.0.0.1 --port "$PORT" --strictPort > /dev/null 2>&1 &
-		pid=$!
-		trap 'kill "$pid" 2>/dev/null || true' EXIT
+		E2E_SERVER_PID=$!
+		trap 'kill "${E2E_SERVER_PID:-}" 2>/dev/null || true' EXIT
 		for _ in $(seq 1 60); do
 			server_up && break
 			sleep 0.5

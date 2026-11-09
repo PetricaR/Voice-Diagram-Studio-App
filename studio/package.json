@@ -2,11 +2,28 @@
   "name": "voice-diagram-studio",
   "private": true,
   "version": "0.1.0",
-  "description": "Voice-first diagram studio: speak a diagram, edit it by voice, export to draw.io",
+  "license": "MIT",
+  "description": "Voice-first diagram studio: speak a diagram, edit it by voice, export to draw.io and Markdown",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/PetricaR/Voice-Diagram-Studio-App.git",
+    "directory": "studio"
+  },
+  "keywords": [
+    "gemini",
+    "gemini-live",
+    "voice-ai",
+    "diagrams",
+    "drawio",
+    "architecture-diagrams",
+    "react-flow",
+    "elkjs"
+  ],
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
+    "start": "tsx server/index.ts",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -21,7 +38,8 @@
     "@xyflow/react": "^12.12.1",
     "elkjs": "^0.12.1",
     "react": "^19.3.1",
-    "react-dom": "^19.3.1"
+    "react-dom": "^19.3.1",
+    "tsx": "^4.23.15"
   },
   "devDependencies": {
     "@types/node": "^26.6.6",
@@ -30,7 +48,6 @@
     "@types/ws": "^8.18.2",
     "@vitejs/plugin-react": "^6.3.0",
     "playwright": "^1.65.0",
-    "tsx": "^4.23.15",
     "typescript": "^7.0.2",
     "vite": "^8.3.6",
     "vitest": "^5.1.0",

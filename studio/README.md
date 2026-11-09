@@ -151,10 +151,22 @@ npm run eval -- --model gemini-3.8-live-extended-thinking --only flowchart
 The eval prints, per step, which checks passed and which existing nodes changed although
 the request did not mention them; results are saved in `eval/results/`.
 
+## Deploy to Cloud Run
+
+`server/index.ts` (and `Dockerfile`) serves the production bundle in `dist/` with a strict `Content-Security-Policy`, mounts `liveTokenMiddleware` at `/api/live/*`, trusts `X-Forwarded-For` for per-client rate limiting on Cloud Run (`K_SERVICE`), and allows `.run.app` origins (or custom domains listed in `STUDIO_ALLOWED_HOSTS`):
+
+```bash
+gcloud run deploy voice-diagram-studio \
+  --source=. \
+  --region=europe-west4 \
+  --set-secrets="GEMINI_API_KEY=gemini-drawio-api-key:latest"
+```
+
 ## Next
 
-- Official cloud icon packs (GCP, AWS, Azure, Kubernetes) with local search, also used to
-  resolve the products Gemini names
+- Official AWS, Azure and Kubernetes SVG icon packs alongside the bundled Google Cloud icon set
 - Sequence, ER/class, state and mind map diagrams; Mermaid import; PNG/SVG export
-- Deploy to Cloud Run: a small Node server for `dist/` plus `liveTokenMiddleware`, the key
-  from Secret Manager, IAP in front, and a Content-Security-Policy
+
+## License
+
+Source code is licensed under the [MIT License](../LICENSE). Google Cloud icons in `public/gcp-icons/` remain trademarks and property of Google LLC.

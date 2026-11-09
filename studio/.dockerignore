@@ -1,0 +1,8 @@
+node_modules
+dist
+.env*
+*.local
+e2e
+eval
+test
+.DS_Store

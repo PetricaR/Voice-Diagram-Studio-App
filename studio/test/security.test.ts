@@ -7,6 +7,7 @@ import type { AddressInfo } from 'node:net';
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import * as liveConfig from '../src/agent/liveConfig';
 import { LiveClient, TOKEN_ENDPOINT } from '../src/voice/liveClient';
+import { CONTENT_SECURITY_POLICY, createStudioServer } from '../server/index';
 import { createLiveToken, fieldMask, liveTokenMiddleware, NEW_SESSION_MS, TOKEN_TTL_MS, type LiveTokenOptions } from '../server/liveToken';
 
 const KEY = 'AIzaSy-secret-test-key-0123456789';
@@ -147,9 +148,16 @@ describe('token API', () => {
   });
 
   it('accepts a host name allowed for a deployment', async () => {
-    setup({ allowedHosts: ['studio.example.com'] });
+    setup({ allowedHosts: ['studio.example.com', '.run.app'] });
     const r = await askToken(undefined, { host: 'studio.example.com', origin: 'https://studio.example.com' });
     expect(r.status).toBe(200);
+    const runApp = await askToken(undefined, {
+      host: 'voice-diagram-studio-796921467904.europe-west4.run.app',
+      origin: 'https://voice-diagram-studio-796921467904.europe-west4.run.app',
+    });
+    expect(runApp.status).toBe(200);
+    const evil = await askToken(undefined, { host: 'evilrun.app', origin: 'https://evilrun.app' });
+    expect(evil.status).toBe(403);
   });
 
   it('only allows the configured models', async () => {
@@ -168,6 +176,31 @@ describe('token API', () => {
     t += 60_000;
     expect((await askToken()).status).toBe(200);
     expect(upstream).toHaveBeenCalledTimes(4);
+  });
+
+  it('rate limits by X-Forwarded-For when trustProxy is enabled', async () => {
+    setup({ rateLimit: 1, trustProxy: true });
+    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' })).status).toBe(200);
+    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.10, 10.0.0.1' })).status).toBe(429);
+    expect((await askToken(undefined, { 'x-forwarded-for': '203.0.113.11, 10.0.0.1' })).status).toBe(200);
+  });
+
+  it('serves static files with Content-Security-Policy in createStudioServer', async () => {
+    const prod = createStudioServer({ getApiKey: () => KEY });
+    await new Promise<void>((r) => prod.listen(0, '127.0.0.1', r));
+    const prodPort = (prod.address() as AddressInfo).port;
+    try {
+      const health = await fetch(`http://127.0.0.1:${prodPort}/healthz`);
+      expect(health.status).toBe(200);
+      expect(health.headers.get('content-security-policy')).toBe(CONTENT_SECURITY_POLICY);
+      expect(await health.json()).toEqual({ ok: true });
+
+      const status = await fetch(`http://127.0.0.1:${prodPort}/api/live/status`);
+      expect(status.status).toBe(200);
+      expect(await status.json()).toEqual({ configured: true });
+    } finally {
+      await new Promise<void>((r) => prod.close(() => r()));
+    }
   });
 
   it('maps a refused key to a clear error without echoing the key', async () => {

@@ -103,8 +103,10 @@ export interface LiveTokenOptions {
   loadConfig: () => Promise<AgentConfig>;
   /** Models tokens may be issued for (default: LIVE_MODELS). */
   models?: readonly string[];
-  /** Host names allowed besides loopback, e.g. the domain of a deployment. */
+  /** Host names allowed besides loopback, e.g. the domain of a deployment (or a ".run.app" suffix). */
   allowedHosts?: readonly string[];
+  /** Trust X-Forwarded-For for per-client rate limiting when behind a reverse proxy (e.g. Cloud Run). */
+  trustProxy?: boolean;
   /** Tokens per client per minute (default 10). */
   rateLimit?: number;
   fetch?: typeof fetch;
@@ -146,7 +148,7 @@ export function liveTokenMiddleware(o: LiveTokenOptions) {
     const invalid = validate(request, config, o.models ?? config.LIVE_MODELS);
     if (invalid) return send(res, 400, { error: 'bad-request', message: invalid });
 
-    const wait = limiter.take(req.socket.remoteAddress ?? 'unknown');
+    const wait = limiter.take(clientAddress(req, o.trustProxy));
     if (wait > 0) {
       return send(res, 429, { error: 'rate-limit', message: 'Too many Live sessions were started; wait a moment.' },
         { 'Retry-After': String(Math.ceil(wait / 1000)) });
@@ -180,6 +182,24 @@ export function liveTokenMiddleware(o: LiveTokenOptions) {
   };
 }
 
+function isAllowedHost(hostname: string, hosts: Set<string>): boolean {
+  if (hosts.has(hostname)) return true;
+  for (const h of hosts) {
+    if (h.startsWith('.') && h.length > 1 && hostname.endsWith(h)) return true;
+  }
+  return false;
+}
+
+function clientAddress(req: IncomingMessage, trustProxy?: boolean): string {
+  if (trustProxy) {
+    const xff = req.headers['x-forwarded-for'];
+    const raw = Array.isArray(xff) ? xff[0] : xff;
+    const first = raw?.split(',')[0]?.trim();
+    if (first) return first;
+  }
+  return req.socket.remoteAddress ?? 'unknown';
+}
+
 /** Rejects requests from other sites and requests addressed to unknown host names. */
 export function checkRequestOrigin(req: IncomingMessage, hosts: Set<string>): string | null {
   const host = (req.headers.host ?? '').toLowerCase();
@@ -190,7 +210,7 @@ export function checkRequestOrigin(req: IncomingMessage, hosts: Set<string>): st
     return 'Bad Host header.';
   }
   // A page on another domain that resolves to this machine (DNS rebinding)
-  if (!hosts.has(hostname)) return `Requests for ${hostname} are not allowed (see STUDIO_ALLOWED_HOSTS).`;
+  if (!isAllowedHost(hostname, hosts)) return `Requests for ${hostname} are not allowed (see STUDIO_ALLOWED_HOSTS).`;
   const site = req.headers['sec-fetch-site'];
   if (site != null && site !== 'same-origin' && site !== 'none') return 'Cross-site requests are not allowed.';
   const origin = req.headers.origin;
