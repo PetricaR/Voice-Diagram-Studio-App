@@ -1,0 +1,14 @@
+# What `gcloud run deploy --source` uploads to Cloud Build (the Dockerfile then
+# picks what goes into the image). Secrets and local files never leave the machine.
+.gcloudignore
+.git
+.gitignore
+#!include:.gitignore
+.env
+.env.*
+*.local
+node_modules/
+dist/
+e2e/
+eval/
+test/

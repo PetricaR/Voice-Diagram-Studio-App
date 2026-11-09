@@ -2,3 +2,8 @@
 .vscode/
 .idea/
 node_modules
+
+# Local secrets (OAuth client, keys)
+.env
+.env.*
+!.env.example
